@@ -1,0 +1,10 @@
+D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\src.exe.config
+D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\src.exe
+D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\src.pdb
+D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\obj\Debug\src.csproj.AssemblyReference.cache
+D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\obj\Debug\src.Form1.resources
+D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\obj\Debug\src.Properties.Resources.resources
+D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\obj\Debug\src.csproj.GenerateResource.cache
+D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\obj\Debug\src.csproj.CoreCompileInputs.cache
+D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\obj\Debug\src.exe
+D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\obj\Debug\src.pdb
