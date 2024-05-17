@@ -2,19 +2,27 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using MySql.Data.MySqlClient;
+
+/* Custom styling:
+ * https://www.youtube.com/watch?v=u8SL5g9QGcI&list=PLwG-AtjFaHdMQtyReCzPdEe6fZ57TqJUs&index=2
+ */
 
 namespace src
 {
     public partial class Form1 : Form
     {
+        private MySqlConnection connection;
         public Form1()
         {
             InitializeComponent();
+            InitializeDatabaseConnection();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -26,7 +34,8 @@ namespace src
         {
             // upload button
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            if(openFileDialog.ShowDialog() == DialogResult.OK)
+            openFileDialog.Filter = "Bitmap Files|*.bmp";
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 pictureBoxUploadedImage.Image = new Bitmap(openFileDialog.FileName);
             }
@@ -50,6 +59,7 @@ namespace src
                 string binaryString = BmpToBinaryString(bitmap);
                 string asciiString = BinaryToAscii(binaryString);
                 Console.WriteLine(asciiString);
+                ConnectionDatabase(asciiString);
             }
             else
             {
@@ -102,6 +112,37 @@ namespace src
             return asciiString.ToString();
         }
 
+        private void InitializeDatabaseConnection()
+        {
+            string connectionString = "server=your_server_address;" +
+                "user=your_username;" +
+                "database=your_database;" +
+                "port=3307;" +
+                "password=your_password";
+            connection = new MySqlConnection(connectionString);
+        }
+
+        private void ConnectionDatabase(String asciiString)
+        {
+            try
+            {
+                connection.Open();
+                string query = "INSERT INTO sidik_jari (berkas_citra, nama) VALUES (@berkas_citra, @nama)";
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.Parameters.AddWithValue("@berka_citra", asciiString);
+                cmd.Parameters.AddWithValue("@nama", "TestNama");
+                cmd.ExecuteNonQuery();
+                MessageBox.Show("SUCCESS");
+            }  
+            catch (Exception e)
+            {
+                MessageBox.Show("An error occurred: " + e.Message);
+            } 
+            finally
+            {
+                connection.Close();
+            }
+        }
 
         private void label1_Click_1(object sender, EventArgs e)
         {
