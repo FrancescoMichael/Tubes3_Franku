@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using MySql.Data.MySqlClient;
+// using MySql.Data.MySqlClient;
 
 /* Custom styling:
  * https://www.youtube.com/watch?v=u8SL5g9QGcI&list=PLwG-AtjFaHdMQtyReCzPdEe6fZ57TqJUs&index=2
@@ -18,11 +18,11 @@ namespace src
 {
     public partial class Form1 : Form
     {
-        private MySqlConnection connection;
+        // private MySqlConnection connection;
         public Form1()
         {
             InitializeComponent();
-            InitializeDatabaseConnection();
+            //InitializeDatabaseConnection();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -30,7 +30,7 @@ namespace src
 
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void uploadButton_Click(object sender, EventArgs e)
         {
             // upload button
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -41,31 +41,29 @@ namespace src
             }
         }
 
-        private void label1_Click(object sender, EventArgs e)
+        private void searchButton_Click(object sender, EventArgs e)
         {
-            
-        }
-
-        private void checkBox1_CheckedChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
+            // serach button
             if (pictureBoxUploadedImage.Image != null)
             {
                 Bitmap bitmap = new Bitmap(pictureBoxUploadedImage.Image);
                 string binaryString = BmpToBinaryString(bitmap);
                 string asciiString = BinaryToAscii(binaryString);
                 Console.WriteLine(asciiString);
-                ConnectionDatabase(asciiString);
+                resultLabel.Text = "Hasilnya adalah : \nHalo\nHehe\nHihi";
+                // ConnectionDatabase(asciiString);
+
+                resultLabel.Font = new Font("Arial", 12, FontStyle.Bold);
+
+                // Optionally, adjust the size to fit the content
+                resultLabel.AutoSize = true;
             }
             else
             {
                 MessageBox.Show("Please upload an image first.");
             }
         }
+
         private string BmpToBinaryString(Bitmap bmp)
         {
             Bitmap grayscaleBmp = new Bitmap(bmp.Width, bmp.Height);
@@ -112,7 +110,7 @@ namespace src
             return asciiString.ToString();
         }
 
-        private void InitializeDatabaseConnection()
+        /* private void InitializeDatabaseConnection()
         {
             string connectionString = "server=your_server_address;" +
                 "user=your_username;" +
@@ -142,14 +140,49 @@ namespace src
             {
                 connection.Close();
             }
-        }
+        } */
 
         private void label1_Click_1(object sender, EventArgs e)
+        {
+            // title
+        }
+
+        private void toggleButton1_CheckedChanged(object sender, EventArgs e)
+        {
+            // toggle button
+        }
+
+        private void pictureBoxUploadedImage_Click(object sender, EventArgs e)
+        {
+            // uploaded image
+        }
+
+        private void pictureBox2_Click(object sender, EventArgs e)
+        {
+            // image result
+        }
+
+        private void pictureBox3_Click(object sender, EventArgs e)
+        {
+            // result description
+        }
+
+        private void label2_Click(object sender, EventArgs e)
         {
 
         }
 
-        private void label2_Click(object sender, EventArgs e)
+        private void label2_Click_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void result_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label3_Click(object sender, EventArgs e)
         {
 
         }

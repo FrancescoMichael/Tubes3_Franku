@@ -29,7 +29,7 @@ namespace src.CustomControl
         //Constructor
         public ToggleButton()
         {
-            this.MinimumSize = new Size(45, 22);
+            this.MinimumSize = new Size(150, 22);
         }
 
         //Methods
