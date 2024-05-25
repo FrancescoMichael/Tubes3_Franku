@@ -75,7 +75,6 @@ namespace src
 
         private void RetrieveData(string name)
         {
-            // query here
             string query = "SELECT * " +
                 "FROM biodata " +
                 $"WHERE nama = '{name}' " +
@@ -152,9 +151,9 @@ namespace src
             }
         }
 
+        // serach button
         private void customButton2_Click(object sender, EventArgs e)
         {
-            // serach button
             if (pictureBoxUploadedImage.Image != null)
             {
                 Bitmap bitmap = new Bitmap(pictureBoxUploadedImage.Image);
@@ -162,27 +161,47 @@ namespace src
                 // start time
                 Stopwatch stopwatch = Stopwatch.StartNew();
 
+                // convert to binary
                 string binaryString = BmpToBinaryString(bitmap);
                 Console.WriteLine(binaryString);
+
+                // convert to ascii
                 string asciiString = BinaryToAscii(binaryString);
                 Console.WriteLine(asciiString);
 
+
+                // implement algorithm
+                if (toggleButton2.Checked)
+                {
+                    // Implement BM Algorithm here
+
+                }
+                else
+                {
+                    // Implement KMP Algorithm here
+
+                }
+
+                // stop time
                 stopwatch.Stop();
 
-                // take data from database
-                RetrieveData("Jn Smth");
 
+                // RESULT SECTION
+
+                // count time execution
                 long executionTimeMs = stopwatch.ElapsedMilliseconds;
-
                 string executionTime = executionTimeMs.ToString();
-                string percentage = "97";
-
                 timeExecutionLabel.Text = $"Waktu pencarian : {executionTime}ms";
+
+                // count percentage
+                string percentage = "97";
                 label2.Text = $"Persentase Kecocokan : {percentage}%";
 
+                // take data from database
+                RetrieveData("Jn Smth"); // example
 
-                // take image
-                RetrieveImage("Jane Smith");
+                // take image from database
+                RetrieveImage("Jane Smith"); // example
             }
             else
             {
@@ -309,14 +328,6 @@ namespace src
         private void toggleButton2_CheckedChanged(object sender, EventArgs e)
         {
             // toggle button
-            if(toggleButton2.Checked)
-            {
-                resultLabel.Text = "Ini BM";
-            }
-            else
-            {
-                resultLabel.Text = "Ini KMP";
-            }
         }
 
         private void label3_Click_1(object sender, EventArgs e)
