@@ -69,7 +69,7 @@
             this.pictureBoxUploadedImage.Location = new System.Drawing.Point(130, 199);
             this.pictureBoxUploadedImage.Name = "pictureBoxUploadedImage";
             this.pictureBoxUploadedImage.Size = new System.Drawing.Size(400, 650);
-            this.pictureBoxUploadedImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+            this.pictureBoxUploadedImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBoxUploadedImage.TabIndex = 6;
             this.pictureBoxUploadedImage.TabStop = false;
             this.pictureBoxUploadedImage.Click += new System.EventHandler(this.pictureBoxUploadedImage_Click);

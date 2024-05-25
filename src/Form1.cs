@@ -23,6 +23,7 @@ namespace src
         {
             InitializeComponent();
             //InitializeDatabaseConnection();
+            resultLabel.Text = "Hasilnya adalah : \nHoho\n";
         }
 
         private void Form1_Load(object sender, EventArgs e)
