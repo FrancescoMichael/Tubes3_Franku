@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.SqlClient;
+using System.Data.SQLite;
 using System.Drawing;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-// using MySql.Data.MySqlClient;
+using System.IO;
+using System.Diagnostics;
 
 /* Custom styling:
  * https://www.youtube.com/watch?v=u8SL5g9QGcI&list=PLwG-AtjFaHdMQtyReCzPdEe6fZ57TqJUs&index=2
@@ -18,12 +14,48 @@ namespace src
 {
     public partial class Form1 : Form
     {
-        // private MySqlConnection connection;
+        private SQLiteConnection connection;
         public Form1()
         {
             InitializeComponent();
-            //InitializeDatabaseConnection();
-            resultLabel.Text = "Hasilnya adalah : \nHoho\n";
+            InitializeDatabase();
+            ReadSQL();
+        }
+
+        private void InitializeDatabase()
+        {
+            connection = new SQLiteConnection("Data Source=biodata.db;Version=3;");
+            connection.Open();
+        }
+
+        private void ReadSQL()
+        {
+            string sqlFilePath = "../../tubes3_stima24.sql";
+            if (!File.Exists(sqlFilePath))
+            {
+                MessageBox.Show("SQL file not found.");
+                return;
+            }
+
+            string sqlCommands = File.ReadAllText(sqlFilePath);
+            string[] commands = sqlCommands.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (string commandText in commands)
+            {
+                Console.WriteLine($"Executing SQL command: {commandText}"); // Log the command text
+                try
+                {
+                    using (var command = new SQLiteCommand(commandText, connection))
+                    {
+                        command.ExecuteNonQuery();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error executing SQL command: {ex.Message}");
+                }
+            }
+
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -31,7 +63,7 @@ namespace src
 
         }
 
-        private void uploadButton_Click(object sender, EventArgs e)
+        private void customButton1_Click_1(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "Bitmap Files|*.bmp";
@@ -41,19 +73,82 @@ namespace src
             }
         }
 
-        private void searchButton_Click(object sender, EventArgs e)
+        private void RetrieveData()
+        {
+            // query here
+            string query = "SELECT * " +
+                "FROM biodata " +
+                "WHERE jenis_kelamin = 'Perempuan' " +
+                "LIMIT 1;";
+            using (var command = new SQLiteCommand(query, connection))
+            {
+                using (var reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        string nameResult = reader["nama"].ToString();
+                        string tempatLahirResult = reader["tempat_lahir"].ToString();
+                        string tanggalLahirResult = ((DateTime)reader["tanggal_lahir"]).ToString("dd-MM-yyyy");
+                        string jenisKelaminResult = reader["jenis_kelamin"].ToString();
+                        string golonganDarahResult = reader["golongan_darah"].ToString();
+                        string alamatResult = reader["alamat"].ToString();
+                        string agamaResult = reader["agama"].ToString();
+                        string statusPerkawinanResult = reader["status_perkawinan"].ToString();
+                        string pekerjaanResult = reader["pekerjaan"].ToString();
+                        string kewarganegaraanResult = reader["kewarganegaraan"].ToString();
+
+                        // Assign retrieved data to your variables
+                        resultLabel.Text = $"HASIL \nNama : {nameResult}\nTempat Lahir : {tempatLahirResult}\nTanggal Lahir : {tanggalLahirResult}\nJenis Kelamin : {jenisKelaminResult}\nGolongan Darah : {golonganDarahResult}\nAlamat : {alamatResult}\nAgama : {agamaResult}\nStatus Perkawinan : {statusPerkawinanResult}\nPekerjaan : {pekerjaanResult}\nKewarganegaraan : {kewarganegaraanResult}";
+
+                        // Additional processing if needed
+                    }
+                    else
+                    {
+                        MessageBox.Show("No data found in the database.");
+                    }
+                }
+            }
+        }
+
+        private void customButton2_Click(object sender, EventArgs e)
         {
             // serach button
             if (pictureBoxUploadedImage.Image != null)
             {
                 Bitmap bitmap = new Bitmap(pictureBoxUploadedImage.Image);
+
+                // start time
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
                 string binaryString = BmpToBinaryString(bitmap);
                 Console.WriteLine(binaryString);
                 string asciiString = BinaryToAscii(binaryString);
                 Console.WriteLine(asciiString);
-                resultLabel.Text = "Hasilnya adalah : \nHalo\nHehe\nHihi\n";
 
-                resultLabel.Font = new Font("Microsoft Sans Serif", 12, FontStyle.Bold);
+                // take data from database
+                RetrieveData();
+
+                stopwatch.Stop();
+
+                long executionTimeMs = stopwatch.ElapsedMilliseconds;
+
+                string executionTime = executionTimeMs.ToString();
+                string percentage = "97";
+
+                timeExecutionLabel.Text = $"Waktu pencarian : {executionTime}ms";
+                label2.Text = $"Persentase Kecocokan : {percentage}%";
+
+                string resultImagePath = "../../../test/5__M_Right_thumb_finger.BMP";
+                if (System.IO.File.Exists(resultImagePath))
+                {
+                    pictureBox2.Image = new Bitmap(resultImagePath);
+                }
+                else
+                {
+                    MessageBox.Show("Result image file not found.");
+                }
+
+                // resultLabel.Font = new Font("Microsoft Sans Serif", 16, FontStyle.Bold);
 
                 resultLabel.AutoSize = true;
             }
@@ -139,48 +234,9 @@ namespace src
             return asciiString.ToString();
         }
 
-
-
-        /* private void InitializeDatabaseConnection()
-        {
-            string connectionString = "server=your_server_address;" +
-                "user=your_username;" +
-                "database=your_database;" +
-                "port=3307;" +
-                "password=your_password";
-            connection = new MySqlConnection(connectionString);
-        }
-
-        private void ConnectionDatabase(String asciiString)
-        {
-            try
-            {
-                connection.Open();
-                string query = "INSERT INTO sidik_jari (berkas_citra, nama) VALUES (@berkas_citra, @nama)";
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                cmd.Parameters.AddWithValue("@berka_citra", asciiString);
-                cmd.Parameters.AddWithValue("@nama", "TestNama");
-                cmd.ExecuteNonQuery();
-                MessageBox.Show("SUCCESS");
-            }  
-            catch (Exception e)
-            {
-                MessageBox.Show("An error occurred: " + e.Message);
-            } 
-            finally
-            {
-                connection.Close();
-            }
-        } */
-
         private void label1_Click_1(object sender, EventArgs e)
         {
             // title
-        }
-
-        private void toggleButton1_CheckedChanged(object sender, EventArgs e)
-        {
-            // toggle button
         }
 
         private void pictureBoxUploadedImage_Click(object sender, EventArgs e)
@@ -214,6 +270,34 @@ namespace src
         }
 
         private void label3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toggleButton2_CheckedChanged(object sender, EventArgs e)
+        {
+            // toggle button
+            if(toggleButton2.Checked)
+            {
+                resultLabel.Text = "Ini BM";
+            }
+            else
+            {
+                resultLabel.Text = "Ini KMP";
+            }
+        }
+
+        private void label3_Click_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label3_Click_2(object sender, EventArgs e)
+        {
+
+        }
+
+        private void resultLabel_Click(object sender, EventArgs e)
         {
 
         }

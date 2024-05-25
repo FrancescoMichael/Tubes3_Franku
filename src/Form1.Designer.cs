@@ -28,15 +28,18 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.label1 = new System.Windows.Forms.Label();
             this.pictureBoxUploadedImage = new System.Windows.Forms.PictureBox();
-            this.searchButton = new System.Windows.Forms.Button();
-            this.uploadButton = new System.Windows.Forms.Button();
             this.timeExecutionLabel = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.resultLabel = new System.Windows.Forms.Label();
-            this.toggleButton1 = new src.CustomControl.ToggleButton();
+            this.KMPLabel = new System.Windows.Forms.Label();
+            this.BMLabel = new System.Windows.Forms.Label();
+            this.customButton2 = new src.CustomControl.CustomButton();
+            this.customButton1 = new src.CustomControl.CustomButton();
+            this.toggleButton2 = new src.CustomControl.ToggleButton();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxUploadedImage)).BeginInit();
             this.SuspendLayout();
@@ -44,9 +47,11 @@
             // pictureBox2
             // 
             this.pictureBox2.BackColor = System.Drawing.SystemColors.HighlightText;
-            this.pictureBox2.Location = new System.Drawing.Point(811, 199);
+            this.pictureBox2.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox2.Image")));
+            this.pictureBox2.Location = new System.Drawing.Point(814, 199);
             this.pictureBox2.Name = "pictureBox2";
             this.pictureBox2.Size = new System.Drawing.Size(400, 650);
+            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBox2.TabIndex = 2;
             this.pictureBox2.TabStop = false;
             this.pictureBox2.Click += new System.EventHandler(this.pictureBox2_Click);
@@ -54,13 +59,13 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 36F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Font = new System.Drawing.Font("Segoe Print", 36F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.ForeColor = System.Drawing.Color.GreenYellow;
-            this.label1.Location = new System.Drawing.Point(674, 52);
+            this.label1.Location = new System.Drawing.Point(572, 53);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(705, 82);
+            this.label1.Size = new System.Drawing.Size(976, 126);
             this.label1.TabIndex = 4;
-            this.label1.Text = "Tugas Besar 3 Stima";
+            this.label1.Text = "FINGERPRINT MATCHER";
             this.label1.Click += new System.EventHandler(this.label1_Click_1);
             // 
             // pictureBoxUploadedImage
@@ -73,28 +78,6 @@
             this.pictureBoxUploadedImage.TabIndex = 6;
             this.pictureBoxUploadedImage.TabStop = false;
             this.pictureBoxUploadedImage.Click += new System.EventHandler(this.pictureBoxUploadedImage_Click);
-            // 
-            // searchButton
-            // 
-            this.searchButton.ForeColor = System.Drawing.Color.Black;
-            this.searchButton.Location = new System.Drawing.Point(904, 926);
-            this.searchButton.Name = "searchButton";
-            this.searchButton.Size = new System.Drawing.Size(240, 79);
-            this.searchButton.TabIndex = 10;
-            this.searchButton.Text = "SEARCH";
-            this.searchButton.UseVisualStyleBackColor = true;
-            this.searchButton.Click += new System.EventHandler(this.searchButton_Click);
-            // 
-            // uploadButton
-            // 
-            this.uploadButton.ForeColor = System.Drawing.Color.Black;
-            this.uploadButton.Location = new System.Drawing.Point(188, 929);
-            this.uploadButton.Name = "uploadButton";
-            this.uploadButton.Size = new System.Drawing.Size(275, 72);
-            this.uploadButton.TabIndex = 11;
-            this.uploadButton.Text = "UPLOAD";
-            this.uploadButton.UseVisualStyleBackColor = true;
-            this.uploadButton.Click += new System.EventHandler(this.uploadButton_Click);
             // 
             // timeExecutionLabel
             // 
@@ -123,22 +106,90 @@
             // resultLabel
             // 
             this.resultLabel.AutoSize = true;
-            this.resultLabel.Location = new System.Drawing.Point(1398, 210);
+            this.resultLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.resultLabel.ForeColor = System.Drawing.Color.GreenYellow;
+            this.resultLabel.Location = new System.Drawing.Point(1352, 199);
             this.resultLabel.Name = "resultLabel";
-            this.resultLabel.Size = new System.Drawing.Size(0, 20);
+            this.resultLabel.Size = new System.Drawing.Size(85, 29);
             this.resultLabel.TabIndex = 14;
+            this.resultLabel.Text = "HASIL";
+            this.resultLabel.Click += new System.EventHandler(this.resultLabel_Click);
             // 
-            // toggleButton1
+            // KMPLabel
             // 
-            this.toggleButton1.AutoSize = true;
-            this.toggleButton1.Location = new System.Drawing.Point(608, 954);
-            this.toggleButton1.MinimumSize = new System.Drawing.Size(45, 22);
-            this.toggleButton1.Name = "toggleButton1";
-            this.toggleButton1.Size = new System.Drawing.Size(136, 24);
-            this.toggleButton1.TabIndex = 9;
-            this.toggleButton1.Text = "toggleButton1";
-            this.toggleButton1.UseVisualStyleBackColor = true;
-            this.toggleButton1.CheckedChanged += new System.EventHandler(this.toggleButton1_CheckedChanged);
+            this.KMPLabel.AutoSize = true;
+            this.KMPLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.KMPLabel.ForeColor = System.Drawing.Color.GreenYellow;
+            this.KMPLabel.Location = new System.Drawing.Point(523, 952);
+            this.KMPLabel.Name = "KMPLabel";
+            this.KMPLabel.Size = new System.Drawing.Size(85, 37);
+            this.KMPLabel.TabIndex = 16;
+            this.KMPLabel.Text = "KMP";
+            this.KMPLabel.Click += new System.EventHandler(this.label3_Click_1);
+            // 
+            // BMLabel
+            // 
+            this.BMLabel.AutoSize = true;
+            this.BMLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BMLabel.ForeColor = System.Drawing.Color.GreenYellow;
+            this.BMLabel.Location = new System.Drawing.Point(770, 952);
+            this.BMLabel.Name = "BMLabel";
+            this.BMLabel.Size = new System.Drawing.Size(64, 37);
+            this.BMLabel.TabIndex = 17;
+            this.BMLabel.Text = "BM";
+            this.BMLabel.Click += new System.EventHandler(this.label3_Click_2);
+            // 
+            // customButton2
+            // 
+            this.customButton2.BackColor = System.Drawing.Color.White;
+            this.customButton2.BackgroundColor = System.Drawing.Color.White;
+            this.customButton2.BorderColor = System.Drawing.Color.PaleVioletRed;
+            this.customButton2.BorderRadius = 20;
+            this.customButton2.BorderSize = 0;
+            this.customButton2.FlatAppearance.BorderSize = 0;
+            this.customButton2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.customButton2.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.customButton2.ForeColor = System.Drawing.Color.YellowGreen;
+            this.customButton2.Location = new System.Drawing.Point(909, 929);
+            this.customButton2.Name = "customButton2";
+            this.customButton2.Size = new System.Drawing.Size(209, 79);
+            this.customButton2.TabIndex = 19;
+            this.customButton2.Text = "SEARCH";
+            this.customButton2.TextColor = System.Drawing.Color.YellowGreen;
+            this.customButton2.UseVisualStyleBackColor = false;
+            this.customButton2.Click += new System.EventHandler(this.customButton2_Click);
+            // 
+            // customButton1
+            // 
+            this.customButton1.BackColor = System.Drawing.Color.White;
+            this.customButton1.BackgroundColor = System.Drawing.Color.White;
+            this.customButton1.BorderColor = System.Drawing.Color.PaleVioletRed;
+            this.customButton1.BorderRadius = 20;
+            this.customButton1.BorderSize = 0;
+            this.customButton1.FlatAppearance.BorderSize = 0;
+            this.customButton1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.customButton1.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.customButton1.ForeColor = System.Drawing.Color.YellowGreen;
+            this.customButton1.Location = new System.Drawing.Point(191, 929);
+            this.customButton1.Name = "customButton1";
+            this.customButton1.Size = new System.Drawing.Size(209, 79);
+            this.customButton1.TabIndex = 18;
+            this.customButton1.Text = "UPLOAD";
+            this.customButton1.TextColor = System.Drawing.Color.YellowGreen;
+            this.customButton1.UseVisualStyleBackColor = false;
+            this.customButton1.Click += new System.EventHandler(this.customButton1_Click_1);
+            // 
+            // toggleButton2
+            // 
+            this.toggleButton2.AutoSize = true;
+            this.toggleButton2.Location = new System.Drawing.Point(614, 941);
+            this.toggleButton2.MinimumSize = new System.Drawing.Size(150, 50);
+            this.toggleButton2.Name = "toggleButton2";
+            this.toggleButton2.Size = new System.Drawing.Size(150, 50);
+            this.toggleButton2.TabIndex = 15;
+            this.toggleButton2.Text = "toggleButton2";
+            this.toggleButton2.UseVisualStyleBackColor = true;
+            this.toggleButton2.CheckedChanged += new System.EventHandler(this.toggleButton2_CheckedChanged);
             // 
             // Form1
             // 
@@ -146,12 +197,14 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.BlueViolet;
             this.ClientSize = new System.Drawing.Size(1978, 1144);
+            this.Controls.Add(this.customButton2);
+            this.Controls.Add(this.customButton1);
+            this.Controls.Add(this.BMLabel);
+            this.Controls.Add(this.KMPLabel);
+            this.Controls.Add(this.toggleButton2);
             this.Controls.Add(this.resultLabel);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.timeExecutionLabel);
-            this.Controls.Add(this.uploadButton);
-            this.Controls.Add(this.searchButton);
-            this.Controls.Add(this.toggleButton1);
             this.Controls.Add(this.pictureBoxUploadedImage);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.pictureBox2);
@@ -171,12 +224,14 @@
         private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.PictureBox pictureBoxUploadedImage;
-        private CustomControl.ToggleButton toggleButton1;
-        private System.Windows.Forms.Button searchButton;
-        private System.Windows.Forms.Button uploadButton;
         private System.Windows.Forms.Label timeExecutionLabel;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label resultLabel;
+        private CustomControl.ToggleButton toggleButton2;
+        private System.Windows.Forms.Label KMPLabel;
+        private System.Windows.Forms.Label BMLabel;
+        private CustomControl.CustomButton customButton1;
+        private CustomControl.CustomButton customButton2;
     }
 }
 

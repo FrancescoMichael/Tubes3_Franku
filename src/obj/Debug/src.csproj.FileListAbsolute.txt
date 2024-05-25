@@ -14,7 +14,6 @@ D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\K4os.Compression.LZ4.dll
 D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\K4os.Compression.LZ4.Streams.dll
 D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\K4os.Hash.xxHash.dll
 D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\Microsoft.Bcl.AsyncInterfaces.dll
-D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\MySql.Data.dll
 D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\System.Buffers.dll
 D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\System.Configuration.ConfigurationManager.dll
 D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\System.Diagnostics.DiagnosticSource.dll
@@ -31,7 +30,6 @@ D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\K4os.Compression.LZ4.xml
 D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\K4os.Compression.LZ4.Streams.xml
 D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\K4os.Hash.xxHash.xml
 D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\Microsoft.Bcl.AsyncInterfaces.xml
-D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\MySql.Data.xml
 D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\System.Buffers.xml
 D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\System.Diagnostics.DiagnosticSource.xml
 D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\System.IO.Pipelines.xml
@@ -40,3 +38,14 @@ D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\System.Numerics.Vectors.xml
 D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
 D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\System.Threading.Tasks.Extensions.xml
 D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\obj\Debug\src.csproj.Up2Date
+D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\EntityFramework.dll
+D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\EntityFramework.SqlServer.dll
+D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\Microsoft.Data.Sqlite.dll
+D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\SQLitePCLRaw.core.dll
+D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\System.Data.SQLite.dll
+D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\System.Data.SQLite.EF6.dll
+D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\System.Data.SQLite.Linq.dll
+D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\EntityFramework.xml
+D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\EntityFramework.SqlServer.xml
+D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\Microsoft.Data.Sqlite.xml
+D:\Kuliah\Stima\Tubes3\Tubes3_Franku\src\bin\Debug\System.Data.SQLite.xml
