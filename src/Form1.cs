@@ -32,7 +32,6 @@ namespace src
 
         private void uploadButton_Click(object sender, EventArgs e)
         {
-            // upload button
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "Bitmap Files|*.bmp";
             if (openFileDialog.ShowDialog() == DialogResult.OK)
@@ -48,14 +47,13 @@ namespace src
             {
                 Bitmap bitmap = new Bitmap(pictureBoxUploadedImage.Image);
                 string binaryString = BmpToBinaryString(bitmap);
+                Console.WriteLine(binaryString);
                 string asciiString = BinaryToAscii(binaryString);
                 Console.WriteLine(asciiString);
-                resultLabel.Text = "Hasilnya adalah : \nHalo\nHehe\nHihi";
-                // ConnectionDatabase(asciiString);
+                resultLabel.Text = "Hasilnya adalah : \nHalo\nHehe\nHihi\n";
 
-                resultLabel.Font = new Font("Arial", 12, FontStyle.Bold);
+                resultLabel.Font = new Font("Microsoft Sans Serif", 12, FontStyle.Bold);
 
-                // Optionally, adjust the size to fit the content
                 resultLabel.AutoSize = true;
             }
             else
@@ -88,6 +86,7 @@ namespace src
                     int grayValue = grayPixelColor.R;
                     binaryString.Append(grayValue < threshold ? '1' : '0');
                 }
+                binaryString.Append('\n');
             }
 
             return binaryString.ToString();
@@ -96,19 +95,50 @@ namespace src
         private string BinaryToAscii(string binaryString)
         {
             StringBuilder asciiString = new StringBuilder();
+            StringBuilder currentByte = new StringBuilder();
 
-            for (int i = 0; i < binaryString.Length; i += 8)
+            foreach (char c in binaryString)
             {
-                if (i + 8 <= binaryString.Length)
+                if (c == '\n')
                 {
-                    string byteString = binaryString.Substring(i, 8);
-                    int decimalValue = Convert.ToInt32(byteString, 2);
-                    asciiString.Append((char)decimalValue);
+                    if (currentByte.Length > 0)
+                    {
+                        while (currentByte.Length < 8)
+                        {
+                            currentByte.Append('0');
+                        } 
+                        int decimalValue = Convert.ToInt32(currentByte.ToString(), 2);
+                        asciiString.Append((char)decimalValue);
+                        currentByte.Clear();
+                    }
+                    asciiString.Append('\n');
                 }
+                else
+                {
+                    currentByte.Append(c);
+                    if (currentByte.Length == 8)
+                    {
+                        int decimalValue = Convert.ToInt32(currentByte.ToString(), 2);
+                        asciiString.Append((char)decimalValue);
+                        currentByte.Clear();
+                    }
+                }
+            }
+
+            if (currentByte.Length > 0)
+            {
+                while (currentByte.Length < 8)
+                {
+                    currentByte.Append('0');
+                }
+                int decimalValue = Convert.ToInt32(currentByte.ToString(), 2);
+                asciiString.Append((char)decimalValue);
             }
 
             return asciiString.ToString();
         }
+
+
 
         /* private void InitializeDatabaseConnection()
         {

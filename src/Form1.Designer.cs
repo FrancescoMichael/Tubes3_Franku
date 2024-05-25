@@ -55,6 +55,7 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 36F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.ForeColor = System.Drawing.Color.GreenYellow;
             this.label1.Location = new System.Drawing.Point(674, 52);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(705, 82);
@@ -65,10 +66,10 @@
             // pictureBoxUploadedImage
             // 
             this.pictureBoxUploadedImage.BackColor = System.Drawing.SystemColors.HighlightText;
-            this.pictureBoxUploadedImage.Location = new System.Drawing.Point(142, 199);
+            this.pictureBoxUploadedImage.Location = new System.Drawing.Point(130, 199);
             this.pictureBoxUploadedImage.Name = "pictureBoxUploadedImage";
             this.pictureBoxUploadedImage.Size = new System.Drawing.Size(400, 650);
-            this.pictureBoxUploadedImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pictureBoxUploadedImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.pictureBoxUploadedImage.TabIndex = 6;
             this.pictureBoxUploadedImage.TabStop = false;
             this.pictureBoxUploadedImage.Click += new System.EventHandler(this.pictureBoxUploadedImage_Click);
@@ -76,7 +77,7 @@
             // searchButton
             // 
             this.searchButton.ForeColor = System.Drawing.Color.Black;
-            this.searchButton.Location = new System.Drawing.Point(875, 929);
+            this.searchButton.Location = new System.Drawing.Point(904, 926);
             this.searchButton.Name = "searchButton";
             this.searchButton.Size = new System.Drawing.Size(240, 79);
             this.searchButton.TabIndex = 10;
@@ -99,6 +100,7 @@
             // 
             this.timeExecutionLabel.AutoSize = true;
             this.timeExecutionLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.timeExecutionLabel.ForeColor = System.Drawing.Color.GreenYellow;
             this.timeExecutionLabel.Location = new System.Drawing.Point(1303, 929);
             this.timeExecutionLabel.Name = "timeExecutionLabel";
             this.timeExecutionLabel.Size = new System.Drawing.Size(286, 37);
@@ -110,6 +112,7 @@
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.ForeColor = System.Drawing.Color.GreenYellow;
             this.label2.Location = new System.Drawing.Point(1303, 971);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(371, 37);
@@ -141,7 +144,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            this.BackColor = System.Drawing.Color.BlueViolet;
             this.ClientSize = new System.Drawing.Size(1978, 1144);
             this.Controls.Add(this.resultLabel);
             this.Controls.Add(this.label2);
