@@ -73,12 +73,12 @@ namespace src
             }
         }
 
-        private void RetrieveData()
+        private void RetrieveData(string name)
         {
             // query here
             string query = "SELECT * " +
                 "FROM biodata " +
-                "WHERE jenis_kelamin = 'Perempuan' " +
+                $"WHERE nama = '{name}' " +
                 "LIMIT 1;";
             using (var command = new SQLiteCommand(query, connection))
             {
@@ -98,9 +98,51 @@ namespace src
                         string kewarganegaraanResult = reader["kewarganegaraan"].ToString();
 
                         // Assign retrieved data to your variables
-                        resultLabel.Text = $"HASIL \nNama : {nameResult}\nTempat Lahir : {tempatLahirResult}\nTanggal Lahir : {tanggalLahirResult}\nJenis Kelamin : {jenisKelaminResult}\nGolongan Darah : {golonganDarahResult}\nAlamat : {alamatResult}\nAgama : {agamaResult}\nStatus Perkawinan : {statusPerkawinanResult}\nPekerjaan : {pekerjaanResult}\nKewarganegaraan : {kewarganegaraanResult}";
+                        resultLabel.Text = $"HASIL \n" +
+                            $"Nama : {nameResult}\n" +
+                            $"Tempat Lahir : {tempatLahirResult}\n" +
+                            $"Tanggal Lahir : {tanggalLahirResult}\n" +
+                            $"Jenis Kelamin : {jenisKelaminResult}\n" +
+                            $"Golongan Darah : {golonganDarahResult}\n" +
+                            $"Alamat : {alamatResult}\n" +
+                            $"Agama : {agamaResult}\n" +
+                            $"Status Perkawinan : {statusPerkawinanResult}\n" +
+                            $"Pekerjaan : {pekerjaanResult}\n" +
+                            $"Kewarganegaraan : {kewarganegaraanResult}";
 
                         // Additional processing if needed
+                    }
+                    else
+                    {
+                        MessageBox.Show("No data found in the database.");
+                    }
+                }
+            }
+        }
+
+        private void RetrieveImage(string name)
+        {
+            // query here
+            string query = "SELECT berkas_citra " +
+                "FROM sidik_jari " +
+                $"WHERE nama = '{name}' " +
+                "LIMIT 1;";
+            using (var command = new SQLiteCommand(query, connection))
+            {
+                using (var reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        string resultImagePath = reader["berkas_citra"].ToString();
+
+                        if (System.IO.File.Exists(resultImagePath))
+                        {
+                            pictureBox2.Image = new Bitmap(resultImagePath);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Result image file not found.");
+                        }
                     }
                     else
                     {
@@ -125,10 +167,10 @@ namespace src
                 string asciiString = BinaryToAscii(binaryString);
                 Console.WriteLine(asciiString);
 
-                // take data from database
-                RetrieveData();
-
                 stopwatch.Stop();
+
+                // take data from database
+                RetrieveData("Jn Smth");
 
                 long executionTimeMs = stopwatch.ElapsedMilliseconds;
 
@@ -138,19 +180,9 @@ namespace src
                 timeExecutionLabel.Text = $"Waktu pencarian : {executionTime}ms";
                 label2.Text = $"Persentase Kecocokan : {percentage}%";
 
-                string resultImagePath = "../../../test/5__M_Right_thumb_finger.BMP";
-                if (System.IO.File.Exists(resultImagePath))
-                {
-                    pictureBox2.Image = new Bitmap(resultImagePath);
-                }
-                else
-                {
-                    MessageBox.Show("Result image file not found.");
-                }
 
-                // resultLabel.Font = new Font("Microsoft Sans Serif", 16, FontStyle.Bold);
-
-                resultLabel.AutoSize = true;
+                // take image
+                RetrieveImage("Jane Smith");
             }
             else
             {
