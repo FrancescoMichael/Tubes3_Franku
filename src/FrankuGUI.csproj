@@ -9,21 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="placeholder.png" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="EntityFramework" Version="6.4.4" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Stub.System.Data.SQLite.Core.NetStandard" Version="1.0.118" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.118" />
-    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.118" />
-    <PackageReference Include="System.Data.SQLite.EF6" Version="1.0.118" />
     <PackageReference Include="System.Drawing.Common" Version="8.0.6" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Include="placeholder.png" />
   </ItemGroup>
 
 </Project>

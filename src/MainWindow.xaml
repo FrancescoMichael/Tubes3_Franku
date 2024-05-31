@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FrankuGUI"
         mc:Ignorable="d"
-        Title="MainWindow" Height="534" Width="960">
+        Title="MainWindow" Height="534" Width="960"
+        ResizeMode="NoResize">
     <Grid x:Name="GridBG">
         <Grid.Background>
             <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -15,13 +16,13 @@
         </Grid.Background>
         <Label x:Name="TitleLabel" Content="Fingerprint Pattern Matcher" HorizontalAlignment="Center" Margin="0,36,0,0" VerticalAlignment="Top" Height="39" Width="390" Foreground="White" FontSize="24" FontFamily="Cascadia Mono"/>
         <Button x:Name="ButtonSelectImage" Content="select image" HorizontalAlignment="Left" Margin="125,414,0,0" VerticalAlignment="Top" Width="150" Height="45" BorderBrush="{x:Null}" Foreground="#FF3B3B3B" Click="ButtonSelectImageHandle" FontFamily="Cascadia Mono" Background="#FFD9D9D9" ClickMode="Press"/>
-        <Button Content="search" HorizontalAlignment="Left" Margin="692,414,0,0" VerticalAlignment="Top" Width="150" Height="45" BorderBrush="{x:Null}" Foreground="#FF3B3B3B" Click="Button_Click_1" FontFamily="Cascadia Mono" Background="#FFD9D9D9"/>
-        <Rectangle x:Name="RectangleInput" HorizontalAlignment="Left" Height="250" Margin="100,120,0,0" VerticalAlignment="Top" Width="200" Fill="#FFD9D9D9"/>
-        <Rectangle x:Name="RectangleMatched" Height="250" Margin="380,120,380,0" VerticalAlignment="Top" Fill="#FFD9D9D9"/>
-        <Rectangle x:Name="RectangleResultBox" Margin="667,120,0,0" Fill="#FFD9D9D9" HorizontalAlignment="Left" Width="200" Height="250" VerticalAlignment="Top"/>
-        <Image x:Name="ImageContainerMatched" Height="250" VerticalAlignment="Top" Margin="380,120,380,0"/>
+        <Button x:Name="ButtonSearch" Click="SearchButtonClickHandle" Content="search" HorizontalAlignment="Left" Margin="692,414,0,0" VerticalAlignment="Top" Width="150" Height="45" BorderBrush="{x:Null}" Foreground="#FF3B3B3B" FontFamily="Cascadia Mono" Background="#FFD9D9D9"/>
+        <Rectangle x:Name="RectangleInput" HorizontalAlignment="Left" Height="250" Margin="100,120,0,0" VerticalAlignment="Top" Width="200" Fill="#FFD9D9D9" Stroke="Black"/>
+        <Rectangle x:Name="RectangleMatched" Height="250" Margin="380,120,380,0" VerticalAlignment="Top" Fill="#FFD9D9D9" Stroke="Black"/>
+        <Rectangle x:Name="RectangleResultBox" Margin="667,120,0,0" Fill="#FFD9D9D9" HorizontalAlignment="Left" Width="200" Height="250" VerticalAlignment="Top" Stroke="Black"/>
+        <Image x:Name="ImageContainerMatched" Height="250" VerticalAlignment="Top" Margin="380,120,380,0" Stretch="UniformToFill"/>
         <Image x:Name="ImageContainerInput" HorizontalAlignment="Left" Height="250" Margin="100,120,0,0" VerticalAlignment="Top" Width="200" Stretch="UniformToFill"/>
-        <ToggleButton Height="45" Margin="405,414,405,0" VerticalAlignment="Top" Checked="ToggleButton_Checked" FontFamily="Cascadia Mono" Foreground="#FF444444" BorderBrush="{x:Null}" Background="#FFABD0D4" Width="150">
+        <ToggleButton x:Name="ToggleAlgorithm" Height="45" Margin="405,414,405,0" VerticalAlignment="Top" Click="ToggleButton_Checked" FontFamily="Cascadia Mono" Foreground="#FF444444" BorderBrush="{x:Null}" Background="#FFABD0D4" Width="150" HorizontalAlignment="Center">
             <ToggleButton.Style>
                 <Style TargetType="ToggleButton">
                     <Style.Triggers>
@@ -35,5 +36,32 @@
                 </Style>
             </ToggleButton.Style>
         </ToggleButton>
+        <Grid Margin="100,370,0,0" HorizontalAlignment="Left" Width="200" Height="44" VerticalAlignment="Top">
+            <Label HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock x:Name="TextBoxSelectedFile" Text="" TextAlignment="Center" Foreground="White" FontFamily="Cascadia Mono" FontSize="10"/>
+            </Label>
+        </Grid>
+        <Grid Margin="0,370,0,0" HorizontalAlignment="Center" Width="200" Height="44" VerticalAlignment="Top">
+            <Label HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock x:Name="TextBoxSimilarityResult"  Text="" TextAlignment="Center" Foreground="White" FontFamily="Cascadia Mono" FontSize="10"/>
+            </Label>
+        </Grid>
+        <Grid Margin="667,370,0,0" Height="44" VerticalAlignment="Top" HorizontalAlignment="Left" Width="200">
+            <Label HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock x:Name="TextBoxRuntime" Text="" TextAlignment="Center" Foreground="White" FontFamily="Cascadia Mono" FontSize="10"/>
+            </Label>
+        </Grid>
+        <Label x:Name="LabelNIK" Content="NIK:" HorizontalAlignment="Left" Margin="667,120,0,0" VerticalAlignment="Top" FontFamily="Cascadia Mono" FontSize="9"/>
+        <Label x:Name="LabelNama" Content="Nama:" HorizontalAlignment="Left" Margin="667,139,0,0" VerticalAlignment="Top" FontFamily="Cascadia Mono" FontSize="9"/>
+        <Label x:Name="LabelTmpLahir" Content="Tempat Lahir:" HorizontalAlignment="Left" Margin="667,158,0,0" VerticalAlignment="Top" FontFamily="Cascadia Mono" FontSize="9"/>
+        <Label x:Name="LabelTglLahir" Content="Tanggal Lahir:" HorizontalAlignment="Left" Margin="667,177,0,0" VerticalAlignment="Top" FontFamily="Cascadia Mono" FontSize="9"/>
+        <Label x:Name="LabelJenisKelamin" Content="Jenis Kelamin:" HorizontalAlignment="Left" Margin="667,196,0,0" VerticalAlignment="Top" FontFamily="Cascadia Mono" FontSize="9"/>
+        <Label x:Name="LabelGoldar" Content="Golongan Darah:" HorizontalAlignment="Left" Margin="667,215,0,0" VerticalAlignment="Top" FontFamily="Cascadia Mono" FontSize="9"/>
+        <Label x:Name="LabelAgama" Content="Agama:" HorizontalAlignment="Left" Margin="667,234,0,0" VerticalAlignment="Top" FontFamily="Cascadia Mono" FontSize="9"/>
+        <Label x:Name="LabelStatusPerkawinan" Content="Status Perkawinan:" HorizontalAlignment="Left" Margin="667,253,0,0" VerticalAlignment="Top" FontFamily="Cascadia Mono" FontSize="9"/>
+        <Label x:Name="LabelPekerjaan" Content="Pekerjaan:" HorizontalAlignment="Left" Margin="667,272,0,0" VerticalAlignment="Top" FontFamily="Cascadia Mono" FontSize="9"/>
+        <Label x:Name="LabelKewarganegaraan" Content="Kewarganegaraan:" HorizontalAlignment="Left" Margin="667,291,0,0" VerticalAlignment="Top" FontFamily="Cascadia Mono" FontSize="9"/>
+        <Label x:Name="LabelAlamat" Content="Alamat:" HorizontalAlignment="Left" Margin="667,310,0,0" VerticalAlignment="Top" FontFamily="Cascadia Mono" FontSize="9"/>
+        <Label x:Name="LabelAlamatContent" Content="" HorizontalAlignment="Left" Margin="667,325,0,0" VerticalAlignment="Top" Foreground="Black" FontFamily="Cascadia Mono" FontSize="9" Height="45" Width="200"/>
     </Grid>
 </Window>

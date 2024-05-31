@@ -1212,12 +1212,7 @@
   },
   "projectFileDependencyGroups": {
     "net8.0-windows7.0": [
-      "EntityFramework >= 6.4.4",
-      "Microsoft.CSharp >= 4.7.0",
-      "Stub.System.Data.SQLite.Core.NetStandard >= 1.0.118",
       "System.Data.SQLite >= 1.0.118",
-      "System.Data.SQLite.Core >= 1.0.118",
-      "System.Data.SQLite.EF6 >= 1.0.118",
       "System.Drawing.Common >= 8.0.6"
     ]
   },
@@ -1271,27 +1266,7 @@
       "net8.0-windows7.0": {
         "targetAlias": "net8.0-windows",
         "dependencies": {
-          "EntityFramework": {
-            "target": "Package",
-            "version": "[6.4.4, )"
-          },
-          "Microsoft.CSharp": {
-            "target": "Package",
-            "version": "[4.7.0, )"
-          },
-          "Stub.System.Data.SQLite.Core.NetStandard": {
-            "target": "Package",
-            "version": "[1.0.118, )"
-          },
           "System.Data.SQLite": {
-            "target": "Package",
-            "version": "[1.0.118, )"
-          },
-          "System.Data.SQLite.Core": {
-            "target": "Package",
-            "version": "[1.0.118, )"
-          },
-          "System.Data.SQLite.EF6": {
             "target": "Package",
             "version": "[1.0.118, )"
           },

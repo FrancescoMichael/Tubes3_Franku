@@ -3,16 +3,12 @@
   "WorkspaceRootPath": "C:\\Users\\hanie\\OneDrive\\Documents\\GitHub\\Tubes3_Franku\\src\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{09E1544E-867E-4F84-A350-B9F279A6E124}|FrankuGUI.csproj|c:\\users\\hanie\\onedrive\\documents\\github\\tubes3_franku\\src\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "AbsoluteMoniker": "D:0:0:{09E1544E-867E-4F84-A350-B9F279A6E124}|FrankuGUI.csproj|C:\\Users\\hanie\\OneDrive\\Documents\\GitHub\\Tubes3_Franku\\src\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
       "RelativeMoniker": "D:0:0:{09E1544E-867E-4F84-A350-B9F279A6E124}|FrankuGUI.csproj|solutionrelative:mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{09E1544E-867E-4F84-A350-B9F279A6E124}|FrankuGUI.csproj|c:\\users\\hanie\\onedrive\\documents\\github\\tubes3_franku\\src\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{09E1544E-867E-4F84-A350-B9F279A6E124}|FrankuGUI.csproj|solutionrelative:mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{09E1544E-867E-4F84-A350-B9F279A6E124}|FrankuGUI.csproj|c:\\users\\hanie\\onedrive\\documents\\github\\tubes3_franku\\src\\frankugui.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
-      "RelativeMoniker": "D:0:0:{09E1544E-867E-4F84-A350-B9F279A6E124}|FrankuGUI.csproj|solutionrelative:frankugui.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
     }
   ],
   "DocumentGroupContainers": [
@@ -33,7 +29,7 @@
               "ToolTip": "C:\\Users\\hanie\\OneDrive\\Documents\\GitHub\\Tubes3_Franku\\src\\MainWindow.xaml",
               "RelativeToolTip": "MainWindow.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2024-05-31T07:19:13.974Z",
+              "WhenOpened": "2024-05-31T09:00:58.976Z",
               "EditorCaption": ""
             },
             {
@@ -44,22 +40,9 @@
               "RelativeDocumentMoniker": "MainWindow.xaml.cs",
               "ToolTip": "C:\\Users\\hanie\\OneDrive\\Documents\\GitHub\\Tubes3_Franku\\src\\MainWindow.xaml.cs",
               "RelativeToolTip": "MainWindow.xaml.cs",
-              "ViewState": "AQIAACEAAAAAAAAAAAAgwCoAAAA9AAAA",
+              "ViewState": "AQIAAHsAAAAAAAAAAAAlwIcAAAAnAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-05-31T06:24:09.458Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "FrankuGUI",
-              "DocumentMoniker": "C:\\Users\\hanie\\OneDrive\\Documents\\GitHub\\Tubes3_Franku\\src\\FrankuGUI.csproj",
-              "RelativeDocumentMoniker": "FrankuGUI.csproj",
-              "ToolTip": "C:\\Users\\hanie\\OneDrive\\Documents\\GitHub\\Tubes3_Franku\\src\\FrankuGUI.csproj",
-              "RelativeToolTip": "FrankuGUI.csproj",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAABkAAAAqAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2024-05-31T06:20:33.442Z",
+              "WhenOpened": "2024-05-31T09:00:55.843Z",
               "EditorCaption": ""
             }
           ]
