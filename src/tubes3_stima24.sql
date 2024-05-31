@@ -6025,7 +6025,7 @@ INSERT INTO `sidik_jari` (`berkas_citra`, `nama`) VALUES
 ('9__M_Right_ring_finger.BMP', 'Sophie Goodwin'),
 ('9__M_Right_thumb_finger.BMP', 'Sophie Goodwin');
 
-INSERT INTO `bioDat` (`NIK`, `nama`, `tempat_lahir`, `tanggal_lahir`, `jenis_kelamin`, `golongan_darah`, `alamat`, `agama`, `status_perkawinan`, `pekerjaan`, `kewarganegaraan`) VALUES
+INSERT INTO `bioData` (`NIK`, `nama`, `tempat_lahir`, `tanggal_lahir`, `jenis_kelamin`, `golongan_darah`, `alamat`, `agama`, `status_perkawinan`, `pekerjaan`, `kewarganegaraan`) VALUES
 ('2088239940637354', 'Tabitha Schowalter', 'Ritchiefield', '1979-08-06', 'Laki-Laki', 'A', '812 Harry Course', 'Kristen', 'Cerai', 'Investor Operations Planner', 'Indonesia'),
 ('4572020283818199', 'Mr. Winston Dickens IV', 'Lake Maxine', '1998-11-23', 'Perempuan', 'AB', '65306 Schumm Pine', 'Buddha', 'Cerai', 'Lead Functionality Producer', 'Indonesia'),
 ('8681960545903183', 'Alejandro Dietrich', 'North Tracyton', '1973-05-04', 'Laki-Laki', 'B', '19262 Waterloo Road', 'Hindu', 'Menikah', 'Investor Markets Assistant', 'Indonesia'),
