@@ -236,8 +236,8 @@ namespace FrankuGUI
                     List<string> nameList = new List<string>();
                     List<string> purePath = new List<string>();
                     while(reader.Read()){
-                        pathList.Add("../test/" + reader.GetString(0));
-                        purePath.Add("test/" + reader.GetString(0));
+                        pathList.Add("../" + reader.GetString(0));
+                        purePath.Add(reader.GetString(0));
                         nameList.Add(reader.GetString(1));
                     }
                     int len = purePath.Count;
@@ -334,8 +334,8 @@ namespace FrankuGUI
                     List<string> nameList = new List<string>();
                     List<string> purePath = new List<string>();
                     while(reader.Read()){
-                        pathList.Add("../test/" + reader.GetString(0));
-                        purePath.Add("test/" + reader.GetString(0));
+                        pathList.Add("../" + reader.GetString(0));
+                        purePath.Add(reader.GetString(0));
                         nameList.Add(reader.GetString(1));
                     }
                     int len = purePath.Count;
@@ -426,7 +426,7 @@ namespace FrankuGUI
                 //MessageBox.Show("DONEALL");
 
                 // take data from database
-                RetrieveData("Vincent Ward"); // example
+                RetrieveData("kRi57a Mu11R"); // example
 
                 // take image from database
                 RetrieveImage(pathRes); // example
