@@ -99,7 +99,9 @@ namespace FrankuGUI
         private static int biggestStatic = -1;
         private static string ansStatic = "";
         private static bool segitunya = false;
-        private static int MAX_THREAD = 12;
+        private static int MAX_THREAD = 18;
+        private static int ALPHABET_SIZE = 256;
+        private static char FIRST_CHARACTER = '\0';
         public MainWindow()
         {
             InitializeComponent();
@@ -201,8 +203,25 @@ namespace FrankuGUI
             for(; i < j && !segitunya; i++){
                 Bitmap baseBitmap = new Bitmap(pathList[i]);
                 List<string> baseList = BmpToBinaryString(baseBitmap);
-                string text = baseList[50].Substring(20, 50);
+                string text = baseList[25].Substring(2, 8) + baseList[50].Substring(2, 8) + baseList[75].Substring(2, 8);
                 bool take = KMPSearch(pattern, text);
+                lock(_lock){
+                    if(take){
+                        segitunya = true;
+                        biggestStatic = 100;
+                        ansStatic = purePath[i];
+                        break;
+                    }
+                }
+            }
+        }
+
+        public void processBM(int i, int j, List<string> pathList, List<string> nameList, List<string> purePath, string pattern) {
+            for(; i < j && !segitunya; i++){
+                Bitmap baseBitmap = new Bitmap(pathList[i]);
+                List<string> baseList = BmpToBinaryString(baseBitmap);
+                string text = baseList[25].Substring(2, 8) + baseList[50].Substring(2, 8) + baseList[75].Substring(2, 8);
+                bool take = BMSearch(pattern, text);
                 lock(_lock){
                     if(take){
                         segitunya = true;
@@ -251,7 +270,7 @@ namespace FrankuGUI
                     for(int i = 0; i < MAX_THREAD; i++){
                         double takeLenDouble = len / UNPROCESS_THREADS;
                         int takeLen = (int)Math.Floor(takeLenDouble);
-                        Thread t = StartTheThread(last_starting_pos, last_starting_pos + takeLen - 1, pathList, nameList, purePath, binaryString);
+                        Thread t = StartTheThread(last_starting_pos, last_starting_pos + takeLen, pathList, nameList, purePath, binaryString);
                         active_threads.Add(t);
                         len -= takeLen;
                         last_starting_pos += takeLen;
@@ -313,6 +332,25 @@ namespace FrankuGUI
             return false;
         }
 
+        private bool BMSearch(string pat, string txt) {
+            int M = pat.Length;
+            int N = txt.Length;
+            List<int> badChar = new List<int>();
+            for(int u = 0; u < ALPHABET_SIZE; u++) badChar.Add(-1);
+            int i = 0;
+            while(i <= N - M) {
+                int j = M - 1;
+                while(j >= 0 && pat[j] == txt[i + j]){
+                    j--;
+                }
+                if(j < 0){
+                    return true;
+                }
+                i += Math.Max(1, j - badChar[txt[i + j] - FIRST_CHARACTER]);
+            } 
+            return false;
+        }
+
         private Thread StartKMPThread(int i, int j, List<string> pathList, List<string> nameList, List<string> purePath, string pattern){
             var t = new Thread(() => processKMP(i, j, pathList, nameList, purePath, pattern));
             t.Start();
@@ -324,7 +362,7 @@ namespace FrankuGUI
                 "FROM sidik_jari; ";
             int biggest = -1;
             string ans = "";
-            string pattern = queryString[50].Substring(20, 50);
+            string pattern = queryString[25].Substring(2, 8) + queryString[50].Substring(2, 8) + queryString[75].Substring(2, 8);
             using (var command = new SQLiteCommand(query, connection))
             {
                 //MessageBox.Show("HERE");
@@ -349,7 +387,7 @@ namespace FrankuGUI
                     for(int i = 0; i < MAX_THREAD; i++){
                         double takeLenDouble = len / UNPROCESS_THREADS;
                         int takeLen = (int)Math.Floor(takeLenDouble);
-                        Thread t = StartKMPThread(last_starting_pos, last_starting_pos + takeLen - 1, pathList, nameList, purePath, pattern);
+                        Thread t = StartKMPThread(last_starting_pos, last_starting_pos + takeLen, pathList, nameList, purePath, pattern);
                         active_threads.Add(t);
                         len -= takeLen;
                         last_starting_pos += takeLen;
@@ -366,8 +404,57 @@ namespace FrankuGUI
             return (ans, biggest);
         }
 
-        private void FindExactMatchBM(List<string> queryString){
+        private Thread StartBMThread(int i, int j, List<string> pathList, List<string> nameList, List<string> purePath, string pattern){
+            var t = new Thread(() => processBM(i, j, pathList, nameList, purePath, pattern));
+            t.Start();
+            return t;
+        }
 
+        private (string, int) FindExactMatchBM(List<string> queryString){
+            string query = "SELECT * " +
+                "FROM sidik_jari; ";
+            int biggest = -1;
+            string ans = "";
+            string pattern = queryString[25].Substring(2, 8) + queryString[50].Substring(2, 8) + queryString[75].Substring(2, 8);
+            using (var command = new SQLiteCommand(query, connection))
+            {
+                //MessageBox.Show("HERE");
+                using (var reader = command.ExecuteReader())
+                {
+                    List<string> pathList = new List<string>();
+                    List<string> nameList = new List<string>();
+                    List<string> purePath = new List<string>();
+                    while(reader.Read()){
+                        pathList.Add("../" + reader.GetString(0));
+                        purePath.Add(reader.GetString(0));
+                        nameList.Add(reader.GetString(1));
+                    }
+                    int len = purePath.Count;
+                    int cur_index = 0;
+                    biggestStatic = -1;
+                    ansStatic = "";
+                    int UNPROCESS_THREADS = MAX_THREAD;
+                    int last_starting_pos = 0;
+                    List<Thread> active_threads = new List<Thread>();
+                    //MessageBox.Show(pathList.Count.ToString());
+                    for(int i = 0; i < MAX_THREAD; i++){
+                        double takeLenDouble = len / UNPROCESS_THREADS;
+                        int takeLen = (int)Math.Floor(takeLenDouble);
+                        Thread t = StartBMThread(last_starting_pos, last_starting_pos + takeLen, pathList, nameList, purePath, pattern);
+                        active_threads.Add(t);
+                        len -= takeLen;
+                        last_starting_pos += takeLen;
+                        UNPROCESS_THREADS--;
+                    }
+                    //MessageBox.Show("YK");
+                    for(int i = 0; i < MAX_THREAD; i++){
+                        active_threads[i].Join();
+                    }
+                    biggest = biggestStatic;
+                    ans = ansStatic;
+                }
+            }
+            return (ans, biggest);
         }
 
         private void SearchButtonClickHandle(object sender, EventArgs e)
@@ -393,7 +480,9 @@ namespace FrankuGUI
                 // implement algorithm
                 if (isBM)
                 {
-                    //var algoResult = FindExactMatchBM(binaryString);
+                    var algoResult = FindExactMatchBM(binaryString);
+                    pathRes = algoResult.Item1;
+                    similarityRes = algoResult.Item2;
                 }
                 else
                 {
@@ -508,14 +597,23 @@ namespace FrankuGUI
             List<string> result = new List<string>();
             for (int y = 0; y < bmp.Height; y++)
             {
-                StringBuilder binaryString = new StringBuilder();
-                for (int x = 0; x < bmp.Width; x++)
+                StringBuilder asciiString = new StringBuilder();
+                for (int x = 0; x < bmp.Width; x += 8)
                 {
-                    System.Drawing.Color pixelColor = bmp.GetPixel(x, y);
-                    int grayValue = (int)(pixelColor.R * 0.299 + pixelColor.G * 0.587 + pixelColor.B * 0.114);
-                    binaryString.Append(grayValue < threshold ? '1' : '0');
+                    int res = 0;
+                    int u = 0;
+                    for(; u < 8 && x + u < bmp.Width; u++){
+                        res <<= 1;
+                        System.Drawing.Color pixelColor = bmp.GetPixel(x + u, y);
+                        int grayValue = (int)(pixelColor.R * 0.299 + pixelColor.G * 0.587 + pixelColor.B * 0.114);
+                        res |= (grayValue < threshold ? 1 : 0);                        
+                    }
+                    for(; u < 8; u++){
+                        res <<= 1;
+                    }
+                    asciiString.Append((char)res);
                 }
-                result.Add(binaryString.ToString());
+                result.Add(asciiString.ToString());
             }
 
             return result;
