@@ -99,7 +99,7 @@ namespace FrankuGUI
         private static int biggestStatic = -1;
         private static string ansStatic = "";
         private static bool segitunya = false;
-        private static int MAX_THREAD = 8;
+        private static int MAX_THREAD = 12;
         public MainWindow()
         {
             InitializeComponent();
@@ -183,12 +183,32 @@ namespace FrankuGUI
             for(; i < j; i++){
                 Bitmap baseBitmap = new Bitmap(pathList[i]);
                 List<string> baseList = BmpToBinaryString(baseBitmap);
+                if(baseList.Count != queryString.Count || baseList[0].Length != queryString[0].Length){
+                    continue;
+                }
                 double notNice = handleArea(queryString, baseList);
                 int real = (int)Math.Floor(notNice * 100);
                 lock(_lock){
                     if(real > biggestStatic){
                         biggestStatic = real;
                         ansStatic = purePath[i];
+                    }
+                }
+            }
+        }
+
+        public void processKMP(int i, int j, List<string> pathList, List<string> nameList, List<string> purePath, string pattern) {
+            for(; i < j && !segitunya; i++){
+                Bitmap baseBitmap = new Bitmap(pathList[i]);
+                List<string> baseList = BmpToBinaryString(baseBitmap);
+                string text = baseList[50].Substring(20, 50);
+                bool take = KMPSearch(pattern, text);
+                lock(_lock){
+                    if(take){
+                        segitunya = true;
+                        biggestStatic = 100;
+                        ansStatic = purePath[i];
+                        break;
                     }
                 }
             }
@@ -209,14 +229,15 @@ namespace FrankuGUI
             string ans = "";
             using (var command = new SQLiteCommand(query, connection))
             {
+                //MessageBox.Show("HERE");
                 using (var reader = command.ExecuteReader())
                 {
                     List<string> pathList = new List<string>();
                     List<string> nameList = new List<string>();
                     List<string> purePath = new List<string>();
                     while(reader.Read()){
-                        pathList.Add("../" + reader.GetString(0));
-                        purePath.Add(reader.GetString(0));
+                        pathList.Add("../test/" + reader.GetString(0));
+                        purePath.Add("test/" + reader.GetString(0));
                         nameList.Add(reader.GetString(1));
                     }
                     int len = purePath.Count;
@@ -226,6 +247,7 @@ namespace FrankuGUI
                     int UNPROCESS_THREADS = MAX_THREAD;
                     int last_starting_pos = 0;
                     List<Thread> active_threads = new List<Thread>();
+                    //MessageBox.Show(pathList.Count.ToString());
                     for(int i = 0; i < MAX_THREAD; i++){
                         double takeLenDouble = len / UNPROCESS_THREADS;
                         int takeLen = (int)Math.Floor(takeLenDouble);
@@ -235,6 +257,7 @@ namespace FrankuGUI
                         last_starting_pos += takeLen;
                         UNPROCESS_THREADS--;
                     }
+                    //MessageBox.Show("YK");
                     for(int i = 0; i < MAX_THREAD; i++){
                         active_threads[i].Join();
                     }
@@ -242,6 +265,7 @@ namespace FrankuGUI
                     ans = ansStatic;
                 }
             }
+            //MessageBox.Show("UYK");
             return (ans, biggest);
         }
 
@@ -249,7 +273,9 @@ namespace FrankuGUI
             int len = 0;
             int i = 1;
             List<int> lps = new List<int>(M);
-            for(int i = 0; i < M; i++) lps.Add(0);
+            for(int j = 0; j < M; j++){
+                lps.Add(0);
+            }
             while(i < M) {
                 if(pat[i] == pat[len]) {
                     len++;
@@ -260,7 +286,7 @@ namespace FrankuGUI
                         len = lps[len - 1];
                     }else{
                         lps[i] = len;
-                        i++
+                        i++;
                     }
                 }
             }
@@ -270,7 +296,6 @@ namespace FrankuGUI
         private bool KMPSearch(string pat, string txt) {
             int M = pat.Length;
             int N = txt.Length;
-
             List<int> lps = computeLPSArray(pat, M);
             int i = 0, j = 0;
             while(i < N) {
@@ -288,8 +313,57 @@ namespace FrankuGUI
             return false;
         }
 
-        private void FindExactMatchKMP(List<string> queryString){
-            
+        private Thread StartKMPThread(int i, int j, List<string> pathList, List<string> nameList, List<string> purePath, string pattern){
+            var t = new Thread(() => processKMP(i, j, pathList, nameList, purePath, pattern));
+            t.Start();
+            return t;
+        }
+
+        private (string, int) FindExactMatchKMP(List<string> queryString){
+            string query = "SELECT * " +
+                "FROM sidik_jari; ";
+            int biggest = -1;
+            string ans = "";
+            string pattern = queryString[50].Substring(20, 50);
+            using (var command = new SQLiteCommand(query, connection))
+            {
+                //MessageBox.Show("HERE");
+                using (var reader = command.ExecuteReader())
+                {
+                    List<string> pathList = new List<string>();
+                    List<string> nameList = new List<string>();
+                    List<string> purePath = new List<string>();
+                    while(reader.Read()){
+                        pathList.Add("../test/" + reader.GetString(0));
+                        purePath.Add("test/" + reader.GetString(0));
+                        nameList.Add(reader.GetString(1));
+                    }
+                    int len = purePath.Count;
+                    int cur_index = 0;
+                    biggestStatic = -1;
+                    ansStatic = "";
+                    int UNPROCESS_THREADS = MAX_THREAD;
+                    int last_starting_pos = 0;
+                    List<Thread> active_threads = new List<Thread>();
+                    //MessageBox.Show(pathList.Count.ToString());
+                    for(int i = 0; i < MAX_THREAD; i++){
+                        double takeLenDouble = len / UNPROCESS_THREADS;
+                        int takeLen = (int)Math.Floor(takeLenDouble);
+                        Thread t = StartKMPThread(last_starting_pos, last_starting_pos + takeLen - 1, pathList, nameList, purePath, pattern);
+                        active_threads.Add(t);
+                        len -= takeLen;
+                        last_starting_pos += takeLen;
+                        UNPROCESS_THREADS--;
+                    }
+                    //MessageBox.Show("YK");
+                    for(int i = 0; i < MAX_THREAD; i++){
+                        active_threads[i].Join();
+                    }
+                    biggest = biggestStatic;
+                    ans = ansStatic;
+                }
+            }
+            return (ans, biggest);
         }
 
         private void FindExactMatchBM(List<string> queryString){
@@ -300,6 +374,9 @@ namespace FrankuGUI
         {
             if (currentBitmapFile != null)
             {
+                segitunya = false;
+                biggestStatic = -1;
+                ansStatic = "";
                 Bitmap bitmap = currentBitmapFile;
 
                 // start time
@@ -316,11 +393,13 @@ namespace FrankuGUI
                 // implement algorithm
                 if (isBM)
                 {
-                    FindExactMatchBM();
+                    //var algoResult = FindExactMatchBM(binaryString);
                 }
                 else
                 {
-                    FindExactMatchKMP();
+                    var algoResult =  FindExactMatchKMP(binaryString);
+                    pathRes = algoResult.Item1;
+                    similarityRes = algoResult.Item2;
                 }
 
                 if (!segitunya) {
@@ -344,8 +423,10 @@ namespace FrankuGUI
                 string percentage = "97";
                 TextBoxSimilarityResult.Text = $"Similarity : {similarityRes}%";
 
+                //MessageBox.Show("DONEALL");
+
                 // take data from database
-                RetrieveData("Jn Smth"); // example
+                RetrieveData("Vincent Ward"); // example
 
                 // take image from database
                 RetrieveImage(pathRes); // example
@@ -406,6 +487,7 @@ namespace FrankuGUI
         {
             // query here
             string relativePath = "../../../../" + name;
+            //MessageBox.Show("SAMWER");
             string absolutePath = System.IO.Path.GetFullPath(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, relativePath));
 
             if (System.IO.File.Exists(absolutePath))
