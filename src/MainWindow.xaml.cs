@@ -44,7 +44,7 @@ namespace FrankuGUI
     public static List<Point> GetConvexHull(List<Point> points)
     {
         if (points == null)
-            return null;
+            return new List<Point>();
 
         if (points.Count() <= 1)
             return points;
@@ -90,23 +90,348 @@ namespace FrankuGUI
     }
 
     }
+
+    class DBSCAN
+    {
+    public int eps;
+    public int minPts;
+    public List<Point> data;  // supplied in cluster()
+    public List<int> labels;  // supplied in cluster()
+    public List<string> baseList;
+    public List<string> queryList;
+    public List<List<int>> indexList;
+    public int M;
+    public int N;
+
+    public DBSCAN(int eps, int minPts)
+    {
+      this.eps = eps;
+      this.minPts = minPts;
+      this.labels = new List<int>();
+    }
+
+    public void changeProp(List<string> baseList, List<string> queryList, List<List<int>> indexList){
+        this.baseList = baseList;
+        this.queryList = queryList;
+        this.indexList = indexList;
+        this.N = baseList.Count;
+        this.M = baseList[0].Length;
+    }
+
+    public List<int> Cluster(List<Point> data)
+    {
+      this.data = data;  // by reference
+      if(this.labels.Count != this.data.Count){
+        this.labels = new List<int>(this.data.Count);
+        for(int i = 0; i < this.data.Count; i++){
+            this.labels.Add(-2);
+        }
+      }else{
+        for(int i = 0; i < this.data.Count; i++){
+            this.labels[i] = -2;
+        }
+      }
+      //this.labels = new int[this.data.Length]; 
+      // unprocessed
+
+      int cid = -1;  // offset the start
+      for (int i = 0; i < this.data.Count; ++i)
+      {
+        if (this.labels[i] != -2)  // has been processed
+          continue;
+
+        List<int> neighbors = this.RegionQuery(i);
+        if (neighbors.Count < this.minPts)
+        {
+          this.labels[i] = -1;  // noise
+        }
+        else
+        {
+          ++cid;
+          this.Expand(i, neighbors, cid);
+        }
+      }
+
+      return this.labels;
+    }
+
+    private List<int> RegionQuery(int p)
+    {
+      List<int> result = new List<int>();
+      Point askedPoint = this.data[p];
+      int xPoint = askedPoint.X;
+      int yPoint = askedPoint.Y;
+      for(int i = Math.Max(0, xPoint - eps); i <= Math.Min(N - 1, xPoint + eps); i++){
+        for(int j = Math.Max(0, yPoint - eps); j <= Math.Min(M - 1, yPoint + eps); j++){
+            int uwu = (i - xPoint) * (i - xPoint) + (j - yPoint) * (j - yPoint);
+            if(uwu > eps * eps) continue;
+            if(baseList[i][j] != queryList[i][j]){
+                result.Add(this.indexList[i][j]);
+            }
+        }
+      }
+      return result;
+    }
+
+    private void Expand(int p, List<int> neighbors, int cid)
+    {
+      this.labels[p] = cid;
+      //int i = 0;
+      //while(i < neighbors.Count)
+      for (int i = 0; i < neighbors.Count; ++i)
+      {
+        int pn = neighbors[i];
+        if (this.labels[pn] == -1)  // noise
+          this.labels[pn] = cid;
+        else if (this.labels[pn] == -2)  // unprocessed
+        {
+          this.labels[pn] = cid;
+          List<int> newNeighbors = this.RegionQuery(pn);
+          if (newNeighbors.Count >= this.minPts)
+            neighbors.AddRange(newNeighbors); // modifies loop
+        }
+        //++i;
+      }
+    }
+
+    private static double EucDistance(double[] x1,
+      double[] x2)
+    {
+      int dim = x1.Length;
+      double sum = 0.0;
+      for (int i = 0; i < dim; ++i)
+        sum += (x1[i] - x2[i]) * (x1[i] - x2[i]);
+      return Math.Sqrt(sum);
+    }
+
+  } // class DBSCAN
+
+  class FFT{
+    private static int LOGN = 18;
+    private static List<long>[] iw = new List<long>[LOGN];
+    private static List<long>[] rv = new List<long>[LOGN];
+    private static List<long>[] w = new List<long>[LOGN];
+    private static long mod = 998244353;
+    private static long g = 3;
+    private static double LOWER_BOUND_TO_CONTINUE = 0.75;
+
+    public static long powMod(long x, long y, long p){
+        long res = 1;
+        x %= p;
+        if(x == 0){
+            return 0;
+        }
+        while(y > 0){
+            if((y & 1L) == 1){
+                res = ((res % p) * (x % p)) % p;
+            }
+            y >>= 1;
+            x = ((x % p) * (x % p)) % p;
+        }
+        return res;
+    }
+
+    public static long inverseMod(long x, long p){
+        return powMod(x, p - 2, p);
+    }
+
+    public static void initFFT(){
+        long wb = powMod(g, (mod - 1) / (1 << LOGN), mod);
+        //MessageBox.Show("DONE POWMOD");
+        for(int i = 0; i < LOGN; i++){
+            iw[i] = new List<long>();
+            rv[i] = new List<long>();
+            w[i] = new List<long>();
+        }
+        for(int st = 0; st < LOGN; st++){
+            for(int i = 0; i < (1 << st); i++){
+                w[st].Add(1);
+                iw[st].Add(1);
+                rv[st].Add(0);
+            }
+            long bw = powMod(wb, 1 << (LOGN - st - 1), mod);
+            long ibw = inverseMod(bw, mod);
+            long cw = 1;
+            long icw = 1;
+            for(int k = 0; k < (1 << st); k++){
+                w[st][k] = cw;
+                iw[st][k] = icw;
+                cw = (cw * bw) % mod;
+                icw = (icw * ibw) % mod;
+            }
+            if(st == 0){
+                rv[st][0] = 0;
+                continue;
+            }
+            int h = (1 << (st - 1));
+            for(int k = 0; k < (1 << st); k++){
+                long u = 1;
+                if(k < h) u = 0;
+                rv[st][k] = (rv[st - 1][k & (h - 1)] << 1) | u;
+            }
+            //string awa = st.ToString();
+            //MessageBox.Show(awa);
+        }
+    }
+
+    private static void fft(ref List<long> a, bool inverse){
+        long n = a.Count;
+        long ln = (long)Math.Log2(n * 1.0);
+        for(int i = 0; i < n; i++){
+            int ni = (int)rv[ln][i];
+            if(i < ni){
+                long temp = a[i];
+                a[i] = a[ni];
+                a[ni] = temp;
+            }
+        }
+        //MessageBox.Show("YEEZY TAUGHT U WELL");
+        for(int st = 0; (1 << st) < n; st++){
+            int len = (1 << st);
+            for(int k = 0; k < n; k += (len << 1)){
+                for(int pos = k; pos < k + len; pos++){
+                    long l = a[pos];
+                    long r = (a[pos + len] * (inverse ? iw[st][pos - k] : w[st][pos - k])) % mod;
+                    a[pos] = ((l + r < mod) ? l + r : l + r - mod);
+                    a[pos + len] = ((l - r >= 0) ? l - r : mod + l - r);
+                }
+            }
+        }
+        if(inverse){
+            long inValue = inverseMod(n, mod);
+            for(int i = 0; i < n; i++){
+                a[i] = (a[i] * inValue) % mod;
+            }
+        }
+    }
+
+    public static List<long> mul(ref List<long> a, ref List<long> b){
+        List<long> fa = new List<long>(a);
+        List<long> fb = new List<long>(b);
+        int n = 1;
+        while(n < a.Count + b.Count){
+            n <<= 1;
+        }
+        fa.AddRange(Enumerable.Repeat(0L, n - fa.Count));
+        fb.AddRange(Enumerable.Repeat(0L, n - fb.Count));
+        //MessageBox.Show("REIMPULSTED");
+        fft(ref fa, false);
+        //MessageBox.Show("DOWNLOAD");
+        fft(ref fb, false);
+        //MessageBox.Show("H@");
+        for(int i = 0; i < n; i++){
+            fa[i] = fa[i] * fb[i] % mod;
+        }
+        fft(ref fa, true);
+        //MessageBox.Show("BOOTLEGGER");
+        return fa;
+    }
+
+    public static (int, int) FindStart(List<string> queryString, List<string> baseString){
+        int N1 = queryString.Count;
+        int M1 = queryString[0].Length;
+        int N2 = baseString.Count;
+        int M2 = baseString[0].Length;
+        if(N1 > N2 || M1 > M2){
+            return (-1, -1);
+        }
+        if(N1 == N2 && M1 == M2){
+            return (0, 0);
+        }
+        List<long> realBase = new List<long>();
+        List<long> invertedBase = new List<long>();
+        List<long> realQuery = new List<long>();
+        List<long> invertedQuery = new List<long>();
+        for(int i = 0; i < N2; i++){
+            for(int j = 0; j < M2; j++){
+                long val = baseString[i][j] - '0';
+                realBase.Add(val);
+                invertedBase.Add(val ^ 1L);
+            }
+        }
+        int maxim = N1 * M2 - 1;
+        for(int i = 0; i < N1; i++){
+            for(int j = 0; j < M1; j++){
+                long val = queryString[i][j] - '0';
+                realQuery.Add(val);
+                invertedQuery.Add(val ^ 1L);
+            }
+            realQuery.AddRange(Enumerable.Repeat(0L, M2 - M1));
+            invertedQuery.AddRange(Enumerable.Repeat(0L, M2 - M1));
+        }
+        realQuery.Reverse();
+        invertedQuery.Reverse();
+        if(realQuery.Count != maxim + 1 || invertedQuery.Count != maxim + 1){
+            //MessageBox.Show("?????W");
+        }
+        List<long> res1 = mul(ref realBase, ref realQuery);
+        List<long> res2 = mul(ref invertedBase, ref invertedQuery);
+        //MessageBox.Show("SOMEONE DONE!!");
+        int r1c = res1.Count;
+        int r2c = res2.Count;
+        int curMaxi = -1, ansI = -1, ansJ = -1;
+        for(int i = 0; i <= N2 - N1; i++){
+            for(int j = 0; j <= M2 - M1; j++){
+                int diff = i * M2 + j;
+                diff += maxim;
+                int take = 0;
+                if(diff < r1c){
+                    take += (int)res1[diff];
+                }
+                if(diff < r2c){
+                    take += (int)res2[diff];
+                }
+                if(take > curMaxi){
+                    curMaxi = take;
+                    ansI = i;
+                    ansJ = j;
+                }
+            }
+        }
+        double percentage = 0;
+        if(curMaxi != -1){
+            percentage = (curMaxi * 1.0) / (N1 * M1 * 1.0);
+        }
+        if(percentage > 1){
+            MessageBox.Show("???PER");
+        }
+        if(percentage < LOWER_BOUND_TO_CONTINUE){
+            return (-1, -1);
+        }
+        return (ansI, ansJ);
+    }
+
+  } // class FFT
+
     public partial class MainWindow : Window
     {
         private SQLiteConnection connection;
         private Boolean isBM;
-        private Bitmap currentBitmapFile;
+        private Bitmap? currentBitmapFile;
         private static Object _lock = new Object();
         private static int biggestStatic = -1;
         private static string ansStatic = "";
         private static bool segitunya = false;
         private static int MAX_THREAD = 18;
-        private static int ALPHABET_SIZE = 256;
-        private static char FIRST_CHARACTER = '\0';
+        private static int ALPHABET_SIZE = 2;
+        private static char FIRST_CHARACTER = '0';
+        private static int numArea = -1;
+        private static List<List<Point>>? resConvexHulls;
+
         public MainWindow()
         {
             InitializeComponent();
-            InitializeDatabase();
+            //InitializeDatabase();
+            connection = new SQLiteConnection("Data Source=biodata.db;Version=3;");
+            connection.Open();
             ReadSQL();
+            FFT.initFFT();
+            List<long> a1 = new List<long>{2, 3};
+            List<long> a2 = new List<long>{1, 1};
+            List<long> res = FFT.mul(ref a1, ref a2);
+            string resString = res[0].ToString() + " " + res[1].ToString() + " " + res[2].ToString();
+            //MessageBox.Show(resString);
+            currentBitmapFile = null;
         }
 
         private void InitializeDatabase()
@@ -164,36 +489,98 @@ namespace FrankuGUI
             isBM = !isBM;
         }
 
-        private double handleArea(List<string> queryString, List<string> baseString){
+        private (double, int, List<List<Point>>) handleArea(List<string> queryString, List<string> baseString){
+            var startInd = FFT.FindStart(queryString, baseString);
+            if(startInd.Item1 == -1 || startInd.Item2 == -1){
+                return (0.0, -1, null);
+            }
+            int rowS = startInd.Item1;
+            int colS = startInd.Item2;
             List<Point> badPoints = new List<Point>();
+            List<List<int>> indexList = new List<List<int>>();
+            int cnt = 0;
+            List<string> tempBase = new List<string>();
+            for(int i = rowS; i < rowS + queryString.Count; i++){
+                StringBuilder asciiString = new StringBuilder();
+                for(int j = colS; j < colS + queryString[0].Length; j++){
+                    asciiString.Append(baseString[i][j]);
+                }
+                tempBase.Add(asciiString.ToString());
+            }
+            baseString = tempBase;
             for(int i = 0; i < queryString.Count; i++){
+                List<int> indexListTemp = new List<int>();
                 for(int j = 0; j < queryString[i].Length; j++){
                     if(queryString[i][j] != baseString[i][j]){
+                        //cnt++;
                         badPoints.Add(new Point(i, j));
+                        indexListTemp.Add(cnt);
+                        cnt++;
+                    }else{
+                        indexListTemp.Add(-1);
                     }
                 }
+                indexList.Add(indexListTemp);
             }
-            //MessageBox.Show("HERE");
-            List<Point> convexHull = ConvexHull.GetConvexHull(badPoints);
-            int totalArea = queryString.Count * queryString[0].Length;
-            double area = totalArea - ConvexHull.GetArea(convexHull);
+            //MessageBox.Show("PROCESS DONE");
+            DBSCAN dbs = new DBSCAN(4, 3);
+            dbs.changeProp(baseString, queryString, indexList);
+            List<int> clusterPoint = dbs.Cluster(badPoints);
+            //MessageBox.Show("DBS DONE");
+            /*int totalArea = queryString.Count * queryString[0].Length;
+            double area = totalArea - cnt;
             double percentage = area / totalArea;
-            return percentage;
+            return percentage;*/
+            //MessageBox.Show("HERE");
+            List<Point> realBadPoints = new List<Point>();
+            int maxi = -1;
+            for(int i = 0; i < clusterPoint.Count; i++){
+                maxi = Math.Max(maxi, clusterPoint[i]);
+            }
+            List<List<Point>> listOfPoints = new List<List<Point>>();
+            double badArea = 0;
+            for(int i = 0; i <= maxi; i++){
+                listOfPoints.Add(new List<Point>());
+            }
+            for(int i = 0; i < clusterPoint.Count; i++){
+                if(clusterPoint[i] == -1){
+                    badArea += 0.5;
+                }else if(clusterPoint[i] != -2){
+                    listOfPoints[clusterPoint[i]].Add(badPoints[i]);
+                }
+            }
+            List<List<Point>> tempConvexHulls = new List<List<Point>>();
+            for(int i = 0; i <= maxi; i++){
+                List<Point> convexHull = ConvexHull.GetConvexHull(listOfPoints[i]);
+                badArea += ConvexHull.GetArea(convexHull);
+                for(int j = 0; j < convexHull.Count; j++){
+                    convexHull[j].X += rowS;
+                    convexHull[j].Y += colS;
+                }
+                tempConvexHulls.Add(convexHull);
+            }
+            int totalArea = queryString.Count * queryString[0].Length;
+            double area = totalArea - badArea;
+            double percentage = area / totalArea;
+            return (percentage, maxi, tempConvexHulls);
         }
 
         public void processThread(int i, int j, List<string> pathList, List<string> nameList, List<string> purePath, List<string> queryString) {
             for(; i < j; i++){
                 Bitmap baseBitmap = new Bitmap(pathList[i]);
                 List<string> baseList = BmpToBinaryString(baseBitmap);
-                if(baseList.Count != queryString.Count || baseList[0].Length != queryString[0].Length){
-                    continue;
-                }
-                double notNice = handleArea(queryString, baseList);
-                int real = (int)Math.Floor(notNice * 100);
+                //if(baseList.Count != queryString.Count || baseList[0].Length != queryString[0].Length){
+                  //  continue;
+                //}
+                var notNice = handleArea(queryString, baseList);
+                int real = (int)Math.Floor(notNice.Item1 * 100);
+                int numAreaTemp = notNice.Item2;
                 lock(_lock){
                     if(real > biggestStatic){
                         biggestStatic = real;
                         ansStatic = purePath[i];
+                        numArea = numAreaTemp;
+                        resConvexHulls = notNice.Item3;
                     }
                 }
             }
@@ -203,7 +590,7 @@ namespace FrankuGUI
             for(; i < j && !segitunya; i++){
                 Bitmap baseBitmap = new Bitmap(pathList[i]);
                 List<string> baseList = BmpToBinaryString(baseBitmap);
-                string text = baseList[25].Substring(2, 8) + baseList[50].Substring(2, 8) + baseList[75].Substring(2, 8);
+                string text = baseList[25].Substring(2, 64) + baseList[50].Substring(2, 64) + baseList[75].Substring(2, 64);
                 bool take = KMPSearch(pattern, text);
                 lock(_lock){
                     if(take){
@@ -220,7 +607,7 @@ namespace FrankuGUI
             for(; i < j && !segitunya; i++){
                 Bitmap baseBitmap = new Bitmap(pathList[i]);
                 List<string> baseList = BmpToBinaryString(baseBitmap);
-                string text = baseList[25].Substring(2, 8) + baseList[50].Substring(2, 8) + baseList[75].Substring(2, 8);
+                string text = baseList[25].Substring(2, 64) + baseList[50].Substring(2, 64) + baseList[75].Substring(2, 64);
                 bool take = BMSearch(pattern, text);
                 lock(_lock){
                     if(take){
@@ -260,7 +647,6 @@ namespace FrankuGUI
                         nameList.Add(reader.GetString(1));
                     }
                     int len = purePath.Count;
-                    int cur_index = 0;
                     biggestStatic = -1;
                     ansStatic = "";
                     int UNPROCESS_THREADS = MAX_THREAD;
@@ -362,7 +748,7 @@ namespace FrankuGUI
                 "FROM sidik_jari; ";
             int biggest = -1;
             string ans = "";
-            string pattern = queryString[25].Substring(2, 8) + queryString[50].Substring(2, 8) + queryString[75].Substring(2, 8);
+            string pattern = queryString[25].Substring(2, 64) + queryString[50].Substring(2, 64) + queryString[75].Substring(2, 64);
             using (var command = new SQLiteCommand(query, connection))
             {
                 //MessageBox.Show("HERE");
@@ -377,7 +763,6 @@ namespace FrankuGUI
                         nameList.Add(reader.GetString(1));
                     }
                     int len = purePath.Count;
-                    int cur_index = 0;
                     biggestStatic = -1;
                     ansStatic = "";
                     int UNPROCESS_THREADS = MAX_THREAD;
@@ -415,7 +800,7 @@ namespace FrankuGUI
                 "FROM sidik_jari; ";
             int biggest = -1;
             string ans = "";
-            string pattern = queryString[25].Substring(2, 8) + queryString[50].Substring(2, 8) + queryString[75].Substring(2, 8);
+            string pattern = queryString[25].Substring(2, 64) + queryString[50].Substring(2, 64) + queryString[75].Substring(2, 64);
             using (var command = new SQLiteCommand(query, connection))
             {
                 //MessageBox.Show("HERE");
@@ -430,7 +815,6 @@ namespace FrankuGUI
                         nameList.Add(reader.GetString(1));
                     }
                     int len = purePath.Count;
-                    int cur_index = 0;
                     biggestStatic = -1;
                     ansStatic = "";
                     int UNPROCESS_THREADS = MAX_THREAD;
@@ -457,21 +841,29 @@ namespace FrankuGUI
             return (ans, biggest);
         }
 
-        private void SearchButtonClickHandle(object sender, EventArgs e)
+        private async void SearchButtonClickHandle(object sender, EventArgs e)
         {
+            ButtonSearch.IsEnabled = false;
+            ToggleAlgorithm.IsEnabled = false;
+            ButtonSelectImage.IsEnabled = false;
             if (currentBitmapFile != null)
             {
+                int similarityRes = 0;
+                long executionTimeMs = 0;
+                string pathRes = "";
+
+                await Task.Run(() => {
                 segitunya = false;
                 biggestStatic = -1;
                 ansStatic = "";
+                numArea = -1;
+                resConvexHulls = null;
                 Bitmap bitmap = currentBitmapFile;
 
                 // start time
                 
                 // convert to binary
                 List<string> binaryString = BmpToBinaryString(bitmap);
-                string pathRes = "";
-                int similarityRes = 0;
                 // convert to ascii
                 //string asciiString = BinaryToAscii(binaryString);
                 //Console.WriteLine(asciiString);
@@ -504,13 +896,14 @@ namespace FrankuGUI
                 // RESULT SECTION
 
                 // count time execution
-                long executionTimeMs = stopwatch.ElapsedMilliseconds;
+                executionTimeMs = stopwatch.ElapsedMilliseconds;
+
+                });
                 string executionTime = executionTimeMs.ToString();
-                TextBoxRuntime.Text = $"Runtime : {executionTimeMs}ms";
+                TextBoxRuntime.Text = $"Runtime : {executionTime}ms";
 
                 // count percentage
-                string percentage = "97";
-                TextBoxSimilarityResult.Text = $"Similarity : {similarityRes}%";
+                TextBoxSimilarityResult.Text = $"Similarity : {biggestStatic}%";
 
                 //MessageBox.Show("DONEALL");
 
@@ -524,6 +917,9 @@ namespace FrankuGUI
             {
                 MessageBox.Show("Please upload an image first.");
             }
+            ButtonSearch.IsEnabled = true;
+            ToggleAlgorithm.IsEnabled = true;
+            ButtonSelectImage.IsEnabled = true;
         }
 
         private void RetrieveData(string name)
@@ -538,17 +934,17 @@ namespace FrankuGUI
                 {
                     if (reader.Read())
                     {
-                        string nameResult = reader["nama"].ToString();
-                        string tempatLahirResult = reader["tempat_lahir"].ToString();
-                        string tanggalLahirResult = ((DateTime)reader["tanggal_lahir"]).ToString("dd-MM-yyyy");
-                        string jenisKelaminResult = reader["jenis_kelamin"].ToString();
-                        string golonganDarahResult = reader["golongan_darah"].ToString();
-                        string alamatResult = reader["alamat"].ToString();
-                        string agamaResult = reader["agama"].ToString();
-                        string statusPerkawinanResult = reader["status_perkawinan"].ToString();
-                        string pekerjaanResult = reader["pekerjaan"].ToString();
-                        string kewarganegaraanResult = reader["kewarganegaraan"].ToString();
-                        string NIKResult = reader["NIK"].ToString();
+                        string nameResult = reader["nama"].ToString()!;
+                        string tempatLahirResult = reader["tempat_lahir"].ToString()!;
+                        string tanggalLahirResult = ((DateTime)reader["tanggal_lahir"]).ToString("dd-MM-yyyy")!;
+                        string jenisKelaminResult = reader["jenis_kelamin"].ToString()!;
+                        string golonganDarahResult = reader["golongan_darah"].ToString()!;
+                        string alamatResult = reader["alamat"].ToString()!;
+                        string agamaResult = reader["agama"].ToString()!;
+                        string statusPerkawinanResult = reader["status_perkawinan"].ToString()!;
+                        string pekerjaanResult = reader["pekerjaan"].ToString()!;
+                        string kewarganegaraanResult = reader["kewarganegaraan"].ToString()!;
+                        string NIKResult = reader["NIK"].ToString()!;
 
                         LabelNama.Content = $"Nama : {nameResult}";
                         LabelNIK.Content = $"NIK : {NIKResult}";
@@ -579,20 +975,142 @@ namespace FrankuGUI
             //MessageBox.Show("SAMWER");
             string absolutePath = System.IO.Path.GetFullPath(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, relativePath));
 
-            if (System.IO.File.Exists(absolutePath))
+            if (System.IO.File.Exists(absolutePath) && resConvexHulls != null)
             {
-                BitmapImage bit = new BitmapImage(new Uri(absolutePath));
+                BitmapImage bit = new BitmapImage();
+                var stream = File.OpenRead(absolutePath);
+                bit.BeginInit();
+                bit.CacheOption = BitmapCacheOption.OnLoad;
+                bit.StreamSource = stream;
+                bit.EndInit();
+                using(Bitmap baseBitmap = BitmapImage2Bitmap(bit))
+                using(Bitmap changedBitmap = new Bitmap(baseBitmap.Width, baseBitmap.Height))
+                using(Bitmap finalBitmap = new Bitmap(changedBitmap.Width, changedBitmap.Height)){
                 //pictureBox2.Image = new Bitmap(resultImagePath);
+
+
+                //changedBitmap.MakeTransparent();
+                int[,] borderTable = new int[changedBitmap.Height, changedBitmap.Width];
+                for(int i = 0; i < resConvexHulls.Count; i++){
+                    int maxi = -1, mini = (int)1e5;
+                    for(int j = 0; j < resConvexHulls[i].Count; j++){
+                        maxi = Math.Max(maxi, resConvexHulls[i][j].X);
+                        mini = Math.Min(mini, resConvexHulls[i][j].X);
+                    }
+                    for(int j = 0; j < resConvexHulls[i].Count; j++){
+                        Point curP = resConvexHulls[i][j];
+                        int k = (j + 1) % resConvexHulls[i].Count;
+                        Point nextP = resConvexHulls[i][k];
+                        borderTable[curP.X, curP.Y] = 1;
+                        if(curP.Y == nextP.Y){ // vertical
+                            int x1S = curP.X;
+                            int x2S = nextP.X;
+                            int adderS = ((x1S > x2S) ? -1 : 1);
+                            x1S += adderS;
+                            for(; x1S != x2S; x1S += adderS){
+                                borderTable[x1S, curP.Y] = 1;
+                            }
+                            continue;
+                        }
+                        if(curP.X == nextP.X){
+                            continue;
+                        }
+                        int x1 = curP.Y;
+                        int y1 = curP.X;
+                        int x2 = nextP.Y;
+                        int y2 = nextP.X;
+                        int adder = ((y1 > y2) ? -1 : 1);
+                        double m = ((y2 - y1) * 1.0) / ((x2 - x1) * 1.0);
+                        double c = (y1 * 1.0) - m * x1;
+                        y1 += adder;
+                        for(; y1 != y2; y1 += adder){
+                            double xUwu = ((y1 * 1.0 - c) / m);
+                            int cTemp = (int)Math.Round(xUwu);
+                            borderTable[y1, cTemp] = 1;
+                        } 
+                    }
+                    for(int j = 0; j < resConvexHulls[i].Count; j++){
+                        borderTable[resConvexHulls[i][j].X, resConvexHulls[i][j].Y] = 1;
+                    }
+                    int maxiCnt = 0, miniCnt = 0;
+                    int maxiP = -1, miniP = -1;
+                    for(int j = 0; j < resConvexHulls[i].Count; j++){
+                        if(resConvexHulls[i][j].X == maxi){
+                            maxiCnt ^= 1;
+                            maxiP = j;
+                            string showJ = j.ToString();
+                            //MessageBox.Show("YEA" + showJ);
+                        }
+                        if(resConvexHulls[i][j].X == mini){
+                            miniCnt ^= 1;
+                            miniP = j;
+                        }
+                    }
+                    if(maxiCnt == 1){
+                        borderTable[resConvexHulls[i][maxiP].X, resConvexHulls[i][maxiP].Y] = 2;
+                    }
+                    if(miniCnt == 1){
+                        borderTable[resConvexHulls[i][miniP].X, resConvexHulls[i][miniP].Y] = 2;
+                    }
+                }
+                for(int y = 0; y < changedBitmap.Height; y++){
+                    int stat = 0;
+                    for(int x = 0; x < changedBitmap.Width; x++){
+                        if(borderTable[y, x] != 0 || stat == 1){
+                            changedBitmap.SetPixel(x, y, System.Drawing.Color.FromArgb(75, System.Drawing.Color.Red));
+                        }
+                        if(borderTable[y, x] == 1){
+                            stat ^= 1;
+                        }
+                    }
+                }
+                using (Graphics g = Graphics.FromImage(finalBitmap))
+                {
+                    //set background color
+                    g.Clear(System.Drawing.Color.Black);
+
+                    //go through each image and draw it on the final image (Notice the offset; since I want to overlay the images i won't have any offset between the images in the finalImage)
+                    
+                    g.DrawImage(baseBitmap, new System.Drawing.Rectangle(0, 0, changedBitmap.Width, changedBitmap.Height));
+                    g.DrawImage(changedBitmap, new System.Drawing.Rectangle(0, 0, changedBitmap.Width, changedBitmap.Height));
+
+                }
+                bit.Freeze();
+                stream.Close();
+                stream.Dispose();
+                BitmapImage changedImage = Bitmap2BitmapImage(finalBitmap);
+                ImageContainerMatched.Source = changedImage;
+                }
+            }
+            else if(System.IO.File.Exists(absolutePath)){
+                BitmapImage bit = new BitmapImage(new Uri(absolutePath));
                 ImageContainerMatched.Source = bit;
             }
-            else
-            {
+            else{
                 MessageBox.Show("Result image file not found.");
             }
         }
 
+        private BitmapImage Bitmap2BitmapImage(Bitmap bitmap)
+        {
+            using (var memory = new MemoryStream())
+            {
+                bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Png);
+                memory.Position = 0;
+
+                var bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = memory;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.EndInit();
+                bitmapImage.Freeze();
+
+                return bitmapImage;
+            }
+        }
         private List<string> BmpToBinaryString(Bitmap bmp)
         {
+            /*
             int threshold = 128;
             List<string> result = new List<string>();
             for (int y = 0; y < bmp.Height; y++)
@@ -614,8 +1132,20 @@ namespace FrankuGUI
                     asciiString.Append((char)res);
                 }
                 result.Add(asciiString.ToString());
+            }*/
+            int threshold = 128;
+            List<string> result = new List<string>();
+            for (int y = 0; y < bmp.Height; y++)
+            {
+                StringBuilder asciiString = new StringBuilder();
+                for (int x = 0; x < bmp.Width; x++)
+                {
+                    System.Drawing.Color pixelColor = bmp.GetPixel(x, y);
+                    int grayValue = (int)(pixelColor.R * 0.299 + pixelColor.G * 0.587 + pixelColor.B * 0.114);
+                    asciiString.Append((grayValue < threshold ? '1' : '0'));
+                }
+                result.Add(asciiString.ToString());
             }
-
             return result;
         }
 
