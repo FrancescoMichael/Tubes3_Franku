@@ -536,7 +536,7 @@ namespace FrankuGUI
 
         private static string nameString = "";
 
-        private static int MINIMUM_FOUND_PERCENTAGE = 51;
+        private static readonly int MINIMUM_FOUND_PERCENTAGE = 51;
 
         private static string EncryptionKey = "1234567890abcdef";
 
