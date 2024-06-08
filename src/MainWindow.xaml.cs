@@ -885,6 +885,8 @@ namespace FrankuGUI
             ButtonSearch.IsEnabled = false;
             ToggleAlgorithm.IsEnabled = false;
             ButtonSelectImage.IsEnabled = false;
+            LabelLoading.Visibility = Visibility.Visible;
+            ImageSpinLoading.Visibility = Visibility.Visible;
             if (currentBitmapFile != null)
             {
                 int similarityRes = 0;
@@ -941,6 +943,8 @@ namespace FrankuGUI
                 });
 
                 if(biggestStatic < MINIMUM_FOUND_PERCENTAGE){
+                    LabelLoading.Visibility = Visibility.Hidden;
+                    ImageSpinLoading.Visibility = Visibility.Hidden;
                     RetrieveData("");
                     RetrieveImage("");
                     TextBoxSimilarityResult.Text = $"Similarity : -1%";
@@ -971,6 +975,8 @@ namespace FrankuGUI
             ButtonSearch.IsEnabled = true;
             ToggleAlgorithm.IsEnabled = true;
             ButtonSelectImage.IsEnabled = true;
+            LabelLoading.Visibility = Visibility.Hidden;
+            ImageSpinLoading.Visibility = Visibility.Hidden;
         }
 
         private void FindNameAndRetrieveData(){
