@@ -16,6 +16,7 @@ using System.Diagnostics;
 using System.Data.SQLite;
 using System.Reflection.Emit;
 using System.Windows.Controls.Primitives;
+using System.Text.RegularExpressions;
 
 
 namespace FrankuGUI
@@ -108,7 +109,14 @@ namespace FrankuGUI
       this.eps = eps;
       this.minPts = minPts;
       this.labels = new List<int>();
-    }
+      this.M = 0;
+      this.N = 0;
+      this.baseList = new List<string>();
+      this.queryList = new List<string>();
+      this.indexList = new List<List<int>>();
+      this.data = new List<Point>();
+      this.labels = new List<int>();
+    }  
 
     public void changeProp(List<string> baseList, List<string> queryList, List<List<int>> indexList){
         this.baseList = baseList;
@@ -121,6 +129,7 @@ namespace FrankuGUI
     public List<int> Cluster(List<Point> data)
     {
       this.data = data;  // by reference
+      
       if(this.labels.Count != this.data.Count){
         this.labels = new List<int>(this.data.Count);
         for(int i = 0; i < this.data.Count; i++){
@@ -418,6 +427,10 @@ namespace FrankuGUI
         private static int numArea = -1;
         private static List<List<Point>>? resConvexHulls;
 
+        private static string nameString = "";
+
+        private static int MINIMUM_FOUND_PERCENTAGE = 80;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -492,7 +505,7 @@ namespace FrankuGUI
         private (double, int, List<List<Point>>) handleArea(List<string> queryString, List<string> baseString){
             var startInd = FFT.FindStart(queryString, baseString);
             if(startInd.Item1 == -1 || startInd.Item2 == -1){
-                return (0.0, -1, null);
+                return (0.0, -1, new List<List<Point>>());
             }
             int rowS = startInd.Item1;
             int colS = startInd.Item2;
@@ -581,6 +594,7 @@ namespace FrankuGUI
                         ansStatic = purePath[i];
                         numArea = numAreaTemp;
                         resConvexHulls = notNice.Item3;
+                        nameString = nameList[i];
                     }
                 }
             }
@@ -590,13 +604,19 @@ namespace FrankuGUI
             for(; i < j && !segitunya; i++){
                 Bitmap baseBitmap = new Bitmap(pathList[i]);
                 List<string> baseList = BmpToBinaryString(baseBitmap);
-                string text = baseList[25].Substring(2, 64) + baseList[50].Substring(2, 64) + baseList[75].Substring(2, 64);
+                int firstQuarter = baseList.Count / 4;
+                int lastQuarter = baseList.Count - firstQuarter;
+                string text = "";
+                for(; firstQuarter < lastQuarter; firstQuarter++){
+                    text += baseList[firstQuarter];
+                }
                 bool take = KMPSearch(pattern, text);
                 lock(_lock){
                     if(take){
                         segitunya = true;
                         biggestStatic = 100;
                         ansStatic = purePath[i];
+                        nameString = nameList[i];
                         break;
                     }
                 }
@@ -607,13 +627,20 @@ namespace FrankuGUI
             for(; i < j && !segitunya; i++){
                 Bitmap baseBitmap = new Bitmap(pathList[i]);
                 List<string> baseList = BmpToBinaryString(baseBitmap);
-                string text = baseList[25].Substring(2, 64) + baseList[50].Substring(2, 64) + baseList[75].Substring(2, 64);
+                int threeEights = baseList.Count / 20;
+                threeEights *= 9;
+                int lastThreeEights = baseList.Count - threeEights;
+                string text = "";
+                for(; threeEights < lastThreeEights; threeEights++){
+                    text += baseList[threeEights];
+                }
                 bool take = BMSearch(pattern, text);
                 lock(_lock){
                     if(take){
                         segitunya = true;
                         biggestStatic = 100;
                         ansStatic = purePath[i];
+                        nameString = nameList[i];
                         break;
                     }
                 }
@@ -748,7 +775,13 @@ namespace FrankuGUI
                 "FROM sidik_jari; ";
             int biggest = -1;
             string ans = "";
-            string pattern = queryString[25].Substring(2, 64) + queryString[50].Substring(2, 64) + queryString[75].Substring(2, 64);
+            string pattern = "";
+            try{
+                int middleRow = queryString.Count / 2;
+                pattern = queryString[middleRow];
+            }catch(Exception ){
+                return ("", 0);
+            }
             using (var command = new SQLiteCommand(query, connection))
             {
                 //MessageBox.Show("HERE");
@@ -800,7 +833,13 @@ namespace FrankuGUI
                 "FROM sidik_jari; ";
             int biggest = -1;
             string ans = "";
-            string pattern = queryString[25].Substring(2, 64) + queryString[50].Substring(2, 64) + queryString[75].Substring(2, 64);
+            string pattern = "";
+            try{
+                int middleRow = queryString.Count / 2;
+                pattern = queryString[middleRow];
+            }catch(Exception ){
+                return ("", 0);
+            }
             using (var command = new SQLiteCommand(query, connection))
             {
                 //MessageBox.Show("HERE");
@@ -858,6 +897,7 @@ namespace FrankuGUI
                 ansStatic = "";
                 numArea = -1;
                 resConvexHulls = null;
+                nameString = "";
                 Bitmap bitmap = currentBitmapFile;
 
                 // start time
@@ -899,6 +939,17 @@ namespace FrankuGUI
                 executionTimeMs = stopwatch.ElapsedMilliseconds;
 
                 });
+
+                if(biggestStatic < MINIMUM_FOUND_PERCENTAGE){
+                    RetrieveData("");
+                    RetrieveImage("");
+                    TextBoxSimilarityResult.Text = $"Similarity : -1%";
+                    ButtonSearch.IsEnabled = true;
+                    ToggleAlgorithm.IsEnabled = true;
+                    ButtonSelectImage.IsEnabled = true;
+                    return;
+                }
+
                 string executionTime = executionTimeMs.ToString();
                 TextBoxRuntime.Text = $"Runtime : {executionTime}ms";
 
@@ -908,7 +959,7 @@ namespace FrankuGUI
                 //MessageBox.Show("DONEALL");
 
                 // take data from database
-                RetrieveData("kRi57a Mu11R"); // example
+                FindNameAndRetrieveData(); // example
 
                 // take image from database
                 RetrieveImage(pathRes); // example
@@ -922,6 +973,31 @@ namespace FrankuGUI
             ButtonSelectImage.IsEnabled = true;
         }
 
+        private void FindNameAndRetrieveData(){
+            string query = "SELECT * " +
+                "FROM biodata; ";
+            bool fd = false;
+            using (var command = new SQLiteCommand(query, connection))
+            {
+                using (var reader = command.ExecuteReader())
+                {
+                    List<string> names = new List<string>();
+                    while(reader.Read()){
+                        names.Add(reader["nama"].ToString()!);
+                    }
+                    for(int i = 0; i < names.Count && !fd; i++){
+                        if(regexMatch(nameString, names[i])){
+                            RetrieveData(names[i]);
+                            fd = true;
+                        }
+                    }
+                    if(!fd){
+                        RetrieveData("!!!");
+                    }
+                }
+            }
+        }
+
         private void RetrieveData(string name)
         {
             string query = "SELECT * " +
@@ -932,9 +1008,10 @@ namespace FrankuGUI
             {
                 using (var reader = command.ExecuteReader())
                 {
+                    
                     if (reader.Read())
                     {
-                        string nameResult = reader["nama"].ToString()!;
+                        string nameResult = nameString;
                         string tempatLahirResult = reader["tempat_lahir"].ToString()!;
                         string tanggalLahirResult = ((DateTime)reader["tanggal_lahir"]).ToString("dd-MM-yyyy")!;
                         string jenisKelaminResult = reader["jenis_kelamin"].ToString()!;
@@ -966,6 +1043,66 @@ namespace FrankuGUI
                     }
                 }
             }
+        }
+
+        private bool regexMatch(string plainText, string comparedText){
+            string regexText = "";
+
+            for (int i = 0; i < plainText.Length; i++)
+            {
+                char c = plainText[i];
+
+                if (c == 'a' || c == 'A')
+                {
+                    regexText += "(?:[Aa]|4)?";
+                }
+                else if (c == 'i' || c == 'I')
+                {
+                    regexText += "(?:[Ii]|1)?";
+                }
+                else if (c == 'u' || c == 'U')
+                {
+                    regexText += "(?:[Uu])?";
+                }
+                else if (c == 'e' || c == 'E')
+                {
+                    regexText += "(?:[Ee]|3)?";
+                }
+                else if (c == 'o' || c == 'O')
+                {
+                    regexText += "(?:[Oo]|0)?";
+                }
+                else if (c == 'g' || c == 'G')
+                {
+                    regexText += "(?:[Gg]|6|9)";
+                }
+                else if (c == 's' || c == 'S')
+                {
+                    regexText += "(?:[Ss]|5)";
+                }
+                else if (c == 'r' || c == 'R')
+                {
+                    regexText += "(?:[Rr]|12)";
+                }
+                else if (c == 'b' || c == 'B')
+                {
+                    regexText += "(?:[Bb]|13|8)";
+                }
+                else if (c == 't' || c == 'T')
+                {
+                    regexText += "(?:[Tt]|7)";
+                }
+                else if (c == 'l' || c == 'L')
+                {
+                    regexText += "(?:[Ll]|1)";
+                }
+                else
+                {
+                    regexText += "(?:[" + char.ToLower(c) + char.ToUpper(c) + "])";
+                }
+            }
+            bool isMatch = Regex.IsMatch(comparedText, regexText);
+            return isMatch;
         }
 
         private void RetrieveImage(string name)
