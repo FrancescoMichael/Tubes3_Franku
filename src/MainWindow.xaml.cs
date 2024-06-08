@@ -17,6 +17,7 @@ using System.Data.SQLite;
 using System.Reflection.Emit;
 using System.Windows.Controls.Primitives;
 using System.Text.RegularExpressions;
+using System.Windows.Interop;
 
 
 namespace FrankuGUI
@@ -879,6 +880,35 @@ namespace FrankuGUI
             }
             return (ans, biggest);
         }
+        private bool isWindowDraggable = true;
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            HwndSource source = PresentationSource.FromVisual(this) as HwndSource;
+            source.AddHook(WndProc);
+        }
+
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            const int WM_SYSCOMMAND = 0x0112;
+            const int SC_MOVE = 0xF010;
+
+            if (!isWindowDraggable)
+            {
+                switch (msg)
+                {
+                    case WM_SYSCOMMAND:
+                        int command = wParam.ToInt32() & 0xfff0;
+                        if (command == SC_MOVE)
+                        {
+                            handled = true;
+                        }
+                        break;
+                }
+            }
+            return IntPtr.Zero;
+        }
 
         private async void SearchButtonClickHandle(object sender, EventArgs e)
         {
@@ -887,6 +917,7 @@ namespace FrankuGUI
             ButtonSelectImage.IsEnabled = false;
             LabelLoading.Visibility = Visibility.Visible;
             ImageSpinLoading.Visibility = Visibility.Visible;
+            isWindowDraggable = false;
             if (currentBitmapFile != null)
             {
                 int similarityRes = 0;
@@ -951,6 +982,7 @@ namespace FrankuGUI
                     ButtonSearch.IsEnabled = true;
                     ToggleAlgorithm.IsEnabled = true;
                     ButtonSelectImage.IsEnabled = true;
+                    isWindowDraggable = true;
                     return;
                 }
 
@@ -977,6 +1009,7 @@ namespace FrankuGUI
             ButtonSelectImage.IsEnabled = true;
             LabelLoading.Visibility = Visibility.Hidden;
             ImageSpinLoading.Visibility = Visibility.Hidden;
+            isWindowDraggable = true;
         }
 
         private void FindNameAndRetrieveData(){
