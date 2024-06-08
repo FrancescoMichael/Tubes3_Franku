@@ -429,7 +429,7 @@ namespace FrankuGUI
 
         private static string nameString = "";
 
-        private static int MINIMUM_FOUND_PERCENTAGE = 80;
+        private static int MINIMUM_FOUND_PERCENTAGE = 51;
 
         public MainWindow()
         {
