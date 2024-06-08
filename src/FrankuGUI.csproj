@@ -13,4 +13,11 @@
     <PackageReference Include="System.Drawing.Common" Version="8.0.6" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Resource Include="..\\assets\\iconwindow.ico" />
+    <Resource Include="..\\assets\\blueicon.png" />
+
+  </ItemGroup>
+
+
 </Project>

@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FrankuGUI"
         mc:Ignorable="d"
+        Icon="blueicon.png"
         Title="Fingerprint Pattern Matcher - Franku" Height="534" Width="960"
         ResizeMode="NoResize">
     <Grid x:Name="GridBG">

@@ -954,7 +954,7 @@ namespace FrankuGUI
                 TextBoxRuntime.Text = $"Runtime : {executionTime}ms";
 
                 // count percentage
-                TextBoxSimilarityResult.Text = $"Similarity : {biggestStatic}%";
+                TextBoxSimilarityResult.Text = $"Similarity : {numArea}%";
 
                 //MessageBox.Show("DONEALL");
 
@@ -1130,6 +1130,7 @@ namespace FrankuGUI
                 int[,] borderTable = new int[changedBitmap.Height, changedBitmap.Width];
                 for(int i = 0; i < resConvexHulls.Count; i++){
                     int maxi = -1, mini = (int)1e5;
+                    if(resConvexHulls[i].Count < 3) continue;
                     for(int j = 0; j < resConvexHulls[i].Count; j++){
                         maxi = Math.Max(maxi, resConvexHulls[i][j].X);
                         mini = Math.Min(mini, resConvexHulls[i][j].X);
@@ -1163,7 +1164,10 @@ namespace FrankuGUI
                         for(; y1 != y2; y1 += adder){
                             double xUwu = ((y1 * 1.0 - c) / m);
                             int cTemp = (int)Math.Round(xUwu);
-                            borderTable[y1, cTemp] = 1;
+                            while(cTemp < changedBitmap.Width && borderTable[y1, cTemp] == 1) cTemp++;
+                            if(cTemp < changedBitmap.Width){
+                                borderTable[y1, cTemp] = 1;
+                            }
                         } 
                     }
                     for(int j = 0; j < resConvexHulls[i].Count; j++){
