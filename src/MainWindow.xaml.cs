@@ -412,6 +412,113 @@ namespace FrankuGUI
 
   } // class FFT
 
+    class EncryptionTEA
+    {
+        private static readonly uint Delta = 0x9e3779b9;
+        private static readonly int Rounds = 32;
+
+        public static byte[] Encrypt(byte[] data, byte[] key)
+        { 
+            uint v0 = BitConverter.ToUInt32(data, 0);
+            uint v1 = BitConverter.ToUInt32(data, 4);
+            uint k0 = BitConverter.ToUInt32(key, 0);
+            uint k1 = BitConverter.ToUInt32(key, 4);
+            uint k2 = BitConverter.ToUInt32(key, 8);
+            uint k3 = BitConverter.ToUInt32(key, 12);
+
+            uint sum = 0;
+            for (int i = 0; i < Rounds; i++)
+            {
+                sum += Delta;
+                v0 += ((v1 << 4) + k0) ^ (v1 + sum) ^ ((v1 >> 5) + k1);
+                v1 += ((v0 << 4) + k2) ^ (v0 + sum) ^ ((v0 >> 5) + k3);
+            }
+
+            byte[] encrypted = new byte[8];
+            Array.Copy(BitConverter.GetBytes(v0), 0, encrypted, 0, 4);
+            Array.Copy(BitConverter.GetBytes(v1), 0, encrypted, 4, 4);
+            return encrypted;
+        }
+
+        public static byte[] Decrypt(byte[] data, byte[] key)
+        {
+            uint v0 = BitConverter.ToUInt32(data, 0);
+            uint v1 = BitConverter.ToUInt32(data, 4);
+            uint k0 = BitConverter.ToUInt32(key, 0);
+            uint k1 = BitConverter.ToUInt32(key, 4);
+            uint k2 = BitConverter.ToUInt32(key, 8);
+            uint k3 = BitConverter.ToUInt32(key, 12);
+
+            uint sum = Delta * (uint)Rounds;
+            for (int i = 0; i < Rounds; i++)
+            {
+                v1 -= ((v0 << 4) + k2) ^ (v0 + sum) ^ ((v0 >> 5) + k3);
+                v0 -= ((v1 << 4) + k0) ^ (v1 + sum) ^ ((v1 >> 5) + k1);
+                sum -= Delta;
+            }
+
+            byte[] decrypted = new byte[8];
+            Array.Copy(BitConverter.GetBytes(v0), 0, decrypted, 0, 4);
+            Array.Copy(BitConverter.GetBytes(v1), 0, decrypted, 4, 4);
+            return decrypted;
+        }
+
+        public static string EncryptString(string plainText, string key)
+        {
+            byte[] data = Encoding.UTF8.GetBytes(plainText);
+            byte[] paddedData = Pad(data);
+            byte[] keyBytes = Encoding.UTF8.GetBytes(key);
+
+            byte[] encryptedData = new byte[paddedData.Length];
+            for (int i = 0; i < paddedData.Length; i += 8)
+            {
+                byte[] block = new byte[8];
+                Array.Copy(paddedData, i, block, 0, 8);
+                byte[] encryptedBlock = Encrypt(block, keyBytes);
+                Array.Copy(encryptedBlock, 0, encryptedData, i, 8);
+            }
+
+            return Convert.ToBase64String(encryptedData);
+        }
+
+        public static string DecryptString(string encryptedText, string key)
+        {
+            byte[] data = Convert.FromBase64String(encryptedText);
+            byte[] keyBytes = Encoding.UTF8.GetBytes(key);
+
+            byte[] decryptedData = new byte[data.Length];
+            for (int i = 0; i < data.Length; i += 8)
+            {
+                byte[] block = new byte[8];
+                Array.Copy(data, i, block, 0, 8);
+                byte[] decryptedBlock = Decrypt(block, keyBytes);
+                Array.Copy(decryptedBlock, 0, decryptedData, i, 8);
+            }
+
+            return Encoding.UTF8.GetString(Unpad(decryptedData));
+        }
+
+        private static byte[] Pad(byte[] data)
+        {
+            int paddingLength = 8 - (data.Length % 8);
+            byte[] paddedData = new byte[data.Length + paddingLength];
+            Array.Copy(data, 0, paddedData, 0, data.Length);
+            for (int i = data.Length; i < paddedData.Length; i++)
+            {
+                paddedData[i] = (byte)paddingLength;
+            }
+            return paddedData;
+        }
+
+        private static byte[] Unpad(byte[] data)
+        {
+            int paddingLength = data[data.Length - 1];
+            byte[] unpaddedData = new byte[data.Length - paddingLength];
+            Array.Copy(data, 0, unpaddedData, 0, unpaddedData.Length);
+            return unpaddedData;
+        }
+    }
+
     public partial class MainWindow : Window
     {
         private SQLiteConnection connection;
@@ -431,13 +538,18 @@ namespace FrankuGUI
 
         private static int MINIMUM_FOUND_PERCENTAGE = 51;
 
+        private static string EncryptionKey = "1234567890abcdef";
+
+        private readonly string connectionString = "Data Source=biodata.db;Version=3;";
+
         public MainWindow()
         {
             InitializeComponent();
-            //InitializeDatabase();
-            connection = new SQLiteConnection("Data Source=biodata.db;Version=3;");
+            // InitializeDatabase();
+            connection = new SQLiteConnection(connectionString);
             connection.Open();
             ReadSQL();
+            EncryptSQL();
             FFT.initFFT();
             List<long> a1 = new List<long>{2, 3};
             List<long> a2 = new List<long>{1, 1};
@@ -445,12 +557,6 @@ namespace FrankuGUI
             string resString = res[0].ToString() + " " + res[1].ToString() + " " + res[2].ToString();
             //MessageBox.Show(resString);
             currentBitmapFile = null;
-        }
-
-        private void InitializeDatabase()
-        {
-            connection = new SQLiteConnection("Data Source=biodata.db;Version=3;");
-            connection.Open();
         }
 
         private void ReadSQL()
@@ -483,6 +589,100 @@ namespace FrankuGUI
 
         }
 
+        private void EncryptSQL() 
+        {
+            try 
+            {
+                string selectQuery = "SELECT * FROM biodata;";
+                
+                using (var selectCommand = new SQLiteCommand(selectQuery, connection))
+                {
+                    using (var reader = selectCommand.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string nik = reader["NIK"].ToString()!;
+                            string nama = reader["nama"].ToString()!;
+                            string tempat_lahir = reader["tempat_lahir"].ToString()!;
+                            string tanggal_lahir = reader["tanggal_lahir"].ToString()!;
+                            string jenis_kelamin = reader["jenis_kelamin"].ToString()!;
+                            string golongan_darah = reader["golongan_darah"].ToString()!;
+                            string alamat = reader["alamat"].ToString()!;
+                            string agama = reader["agama"].ToString()!;
+                            string pekerjaan = reader["pekerjaan"].ToString()!;
+                            string kewarganegaraan = reader["kewarganegaraan"].ToString()!;
+                            string status_perkawinan = reader["status_perkawinan"].ToString()!;
+                            
+                            nama = EncryptionTEA.EncryptString(nama, EncryptionKey);
+                            tempat_lahir = EncryptionTEA.EncryptString(tempat_lahir, EncryptionKey);
+                            tanggal_lahir = EncryptionTEA.EncryptString(tanggal_lahir, EncryptionKey);
+                            jenis_kelamin = EncryptionTEA.EncryptString(jenis_kelamin, EncryptionKey);
+                            golongan_darah = EncryptionTEA.EncryptString(golongan_darah, EncryptionKey);
+                            alamat = EncryptionTEA.EncryptString(alamat, EncryptionKey);
+                            agama = EncryptionTEA.EncryptString(agama, EncryptionKey);
+                            pekerjaan = EncryptionTEA.EncryptString(pekerjaan, EncryptionKey);
+                            kewarganegaraan = EncryptionTEA.EncryptString(kewarganegaraan, EncryptionKey);
+                            status_perkawinan = EncryptionTEA.EncryptString(status_perkawinan, EncryptionKey);
+                            
+                            string updateQuery = $"UPDATE biodata SET " +
+                                                $"nama = '{nama}', " +
+                                                $"tempat_lahir = '{tempat_lahir}', " +
+                                                $"tanggal_lahir = '{tanggal_lahir}', " +
+                                                $"jenis_kelamin = '{jenis_kelamin}', " +
+                                                $"golongan_darah = '{golongan_darah}', " +
+                                                $"alamat = '{alamat}', " +
+                                                $"agama = '{agama}', " +
+                                                $"status_perkawinan = '{status_perkawinan}', " +
+                                                $"pekerjaan = '{pekerjaan}', " +
+                                                $"kewarganegaraan = '{kewarganegaraan}' " +
+                                                $"WHERE NIK = '{nik}';";
+                                                
+                            // Execute the UPDATE query
+                            using (var updateCommand = new SQLiteCommand(updateQuery, connection))
+                            {
+                                updateCommand.ExecuteNonQuery();
+                            }
+                        }
+                    }
+                }
+            } 
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error encrypting Biodata: {ex.Message}");
+            }
+
+            try 
+            {
+                string selectQuery = "SELECT * FROM sidik_jari;";
+                
+                using (var selectCommand = new SQLiteCommand(selectQuery, connection))
+                {
+                    using (var reader = selectCommand.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string berkas_citra = reader["berkas_citra"].ToString()!;
+                            string nama = reader["nama"].ToString()!;
+                            
+                            nama = EncryptionTEA.EncryptString(nama, EncryptionKey);
+                            
+                            string updateQuery = $"UPDATE sidik_jari SET " +
+                                                $"nama = '{nama}' " +
+                                                $"WHERE berkas_citra = '{berkas_citra}';";
+                                                
+                            using (var updateCommand = new SQLiteCommand(updateQuery, connection))
+                            {
+                                updateCommand.ExecuteNonQuery();
+                            }
+                        }
+                    }
+                }
+            } 
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error encrypting Sidik Jari: {ex.Message}");
+            }
+        }
 
         private void ButtonSelectImageHandle(object sender, EventArgs e)
         {
@@ -653,8 +853,6 @@ namespace FrankuGUI
             return t;
         }
 
-
-
         private (string, int) findImage(List<string> binaryString) {
             string query = "SELECT * " +
                 "FROM sidik_jari; ";
@@ -671,7 +869,7 @@ namespace FrankuGUI
                     while(reader.Read()){
                         pathList.Add("../" + reader.GetString(0));
                         purePath.Add(reader.GetString(0));
-                        nameList.Add(reader.GetString(1));
+                        nameList.Add(EncryptionTEA.DecryptString(reader.GetString(1), EncryptionKey));
                     }
                     int len = purePath.Count;
                     biggestStatic = -1;
@@ -793,7 +991,7 @@ namespace FrankuGUI
                     while(reader.Read()){
                         pathList.Add("../" + reader.GetString(0));
                         purePath.Add(reader.GetString(0));
-                        nameList.Add(reader.GetString(1));
+                        nameList.Add(EncryptionTEA.DecryptString(reader.GetString(1), EncryptionKey));
                     }
                     int len = purePath.Count;
                     biggestStatic = -1;
@@ -851,7 +1049,7 @@ namespace FrankuGUI
                     while(reader.Read()){
                         pathList.Add("../" + reader.GetString(0));
                         purePath.Add(reader.GetString(0));
-                        nameList.Add(reader.GetString(1));
+                        nameList.Add(EncryptionTEA.DecryptString(reader.GetString(1), EncryptionKey));
                     }
                     int len = purePath.Count;
                     biggestStatic = -1;
@@ -947,6 +1145,7 @@ namespace FrankuGUI
                     ButtonSearch.IsEnabled = true;
                     ToggleAlgorithm.IsEnabled = true;
                     ButtonSelectImage.IsEnabled = true;
+                    // MessageBox.Show(biggestStatic.ToString());
                     return;
                 }
 
@@ -954,7 +1153,7 @@ namespace FrankuGUI
                 TextBoxRuntime.Text = $"Runtime : {executionTime}ms";
 
                 // count percentage
-                TextBoxSimilarityResult.Text = $"Similarity : {numArea}%";
+                TextBoxSimilarityResult.Text = $"Similarity : {biggestStatic}%";
 
                 //MessageBox.Show("DONEALL");
 
@@ -983,7 +1182,7 @@ namespace FrankuGUI
                 {
                     List<string> names = new List<string>();
                     while(reader.Read()){
-                        names.Add(reader["nama"].ToString()!);
+                        names.Add(EncryptionTEA.DecryptString(reader["nama"].ToString()!, EncryptionKey));
                     }
                     for(int i = 0; i < names.Count && !fd; i++){
                         if(regexMatch(nameString, names[i])){
@@ -1000,9 +1199,12 @@ namespace FrankuGUI
 
         private void RetrieveData(string name)
         {
+            // MessageBox.Show(name);
+            string encryptedName = EncryptionTEA.EncryptString(name, EncryptionKey);
+            // MessageBox.Show(encryptedName);
             string query = "SELECT * " +
                 "FROM biodata " +
-                $"WHERE nama = '{name}' " +
+                $"WHERE nama = '{encryptedName}' " +
                 "LIMIT 1;";
             using (var command = new SQLiteCommand(query, connection))
             {
@@ -1010,10 +1212,11 @@ namespace FrankuGUI
                 {
                     
                     if (reader.Read())
-                    {
+                    {   
+                        string NIKResult = reader["NIK"].ToString()!;
                         string nameResult = nameString;
                         string tempatLahirResult = reader["tempat_lahir"].ToString()!;
-                        string tanggalLahirResult = ((DateTime)reader["tanggal_lahir"]).ToString("dd-MM-yyyy")!;
+                        string tanggalLahirResult = reader["tanggal_lahir"].ToString()!;
                         string jenisKelaminResult = reader["jenis_kelamin"].ToString()!;
                         string golonganDarahResult = reader["golongan_darah"].ToString()!;
                         string alamatResult = reader["alamat"].ToString()!;
@@ -1021,21 +1224,22 @@ namespace FrankuGUI
                         string statusPerkawinanResult = reader["status_perkawinan"].ToString()!;
                         string pekerjaanResult = reader["pekerjaan"].ToString()!;
                         string kewarganegaraanResult = reader["kewarganegaraan"].ToString()!;
-                        string NIKResult = reader["NIK"].ToString()!;
+                        
 
                         LabelNama.Content = $"Nama : {nameResult}";
+                        // LabelNIK.Content = $"NIK : {EncryptionTEA.DecryptString(NIKResult, EncryptionKey)}";
                         LabelNIK.Content = $"NIK : {NIKResult}";
-                        LabelTmpLahir.Content = $"Tempat Lahir : {tempatLahirResult}";
-                        LabelTglLahir.Content = $"Tanggal Lahir : {tanggalLahirResult}";
-                        LabelJenisKelamin.Content = $"Jenis Kelamin : {jenisKelaminResult}";
-                        LabelGoldar.Content = $"Golongan Darah : {golonganDarahResult}";
-                        LabelAlamatContent.Content = $"{alamatResult}";
-                        LabelAgama.Content = $"Agama : {agamaResult}";
-                        LabelStatusPerkawinan.Content = $"Status Perkawinan : {statusPerkawinanResult}";
-                        LabelPekerjaan.Content = $"Pekerjaan : {pekerjaanResult}";
-                        LabelKewarganegaraan.Content = $"Kewarganegaraan : {kewarganegaraanResult}";
-
-                        // Additional processing if needed
+                        LabelTmpLahir.Content = $"Tempat Lahir : {EncryptionTEA.DecryptString(tempatLahirResult, EncryptionKey)}";
+                        // LabelTmpLahir.Content = $"Tempat Lahir : {tempatLahirResult}";
+                        LabelTglLahir.Content = $"Tanggal Lahir : {EncryptionTEA.DecryptString(tanggalLahirResult, EncryptionKey)}";
+                        LabelJenisKelamin.Content = $"Jenis Kelamin : {EncryptionTEA.DecryptString(jenisKelaminResult, EncryptionKey)}";
+                        LabelGoldar.Content = $"Golongan Darah : {EncryptionTEA.DecryptString(golonganDarahResult, EncryptionKey)}";
+                        LabelAlamatContent.Content = $"{EncryptionTEA.DecryptString(alamatResult, EncryptionKey)}";
+                        LabelAgama.Content = $"Agama : {EncryptionTEA.DecryptString(agamaResult, EncryptionKey)}";
+                        LabelStatusPerkawinan.Content = $"Status Perkawinan : {EncryptionTEA.DecryptString(statusPerkawinanResult, EncryptionKey)}";
+                        LabelPekerjaan.Content = $"Pekerjaan : {EncryptionTEA.DecryptString(pekerjaanResult, EncryptionKey)}";
+                        LabelKewarganegaraan.Content = $"Kewarganegaraan : {EncryptionTEA.DecryptString(kewarganegaraanResult, EncryptionKey)}";
+                        
                     }
                     else
                     {
