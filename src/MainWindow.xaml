@@ -6,9 +6,7 @@
         xmlns:local="clr-namespace:FrankuGUI"
         mc:Ignorable="d"
         Title="Fingerprint Pattern Matcher - Franku" Height="534" Width="960"
-        xmlns:gif="https://github.com/XamlAnimatedGif/XamlAnimatedGif"
-        ResizeMode="NoResize"
-        >
+        ResizeMode="NoResize">
     <Grid x:Name="GridBG">
         <Grid.Background>
             <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -96,7 +94,5 @@
             </Label>
         </Grid>
         <Label Content="Result" Margin="764,44,100,0" VerticalAlignment="Top" FontSize="20" FontFamily="Cascadia Mono SemiBold" Foreground="White"/>
-        <Image x:Name="ImageSpinLoading" gif:AnimationBehavior.SourceUri="/Resources/Rolling@1x-1.0s-200px-200px(1).gif" HorizontalAlignment="Left" Margin="14,462,0,0" Width="25" Source="/Resources/Rolling@1x-1.0s-200px-200px(1).gif" Height="26" VerticalAlignment="Top" Visibility="Hidden"/>
-        <Label x:Name="LabelLoading" Content="Loading" HorizontalAlignment="Left" Margin="40,464,0,0" VerticalAlignment="Top" FontFamily="Cascadia Mono" Height="23" Width="54" Foreground="White" FontSize="10" Visibility="Hidden"/>
     </Grid>
 </Window>
