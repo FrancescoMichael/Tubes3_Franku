@@ -880,35 +880,6 @@ namespace FrankuGUI
             }
             return (ans, biggest);
         }
-        private bool isWindowDraggable = true;
-
-        protected override void OnSourceInitialized(EventArgs e)
-        {
-            base.OnSourceInitialized(e);
-            HwndSource source = PresentationSource.FromVisual(this) as HwndSource;
-            source.AddHook(WndProc);
-        }
-
-        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
-        {
-            const int WM_SYSCOMMAND = 0x0112;
-            const int SC_MOVE = 0xF010;
-
-            if (!isWindowDraggable)
-            {
-                switch (msg)
-                {
-                    case WM_SYSCOMMAND:
-                        int command = wParam.ToInt32() & 0xfff0;
-                        if (command == SC_MOVE)
-                        {
-                            handled = true;
-                        }
-                        break;
-                }
-            }
-            return IntPtr.Zero;
-        }
 
         private async void SearchButtonClickHandle(object sender, EventArgs e)
         {
@@ -916,8 +887,7 @@ namespace FrankuGUI
             ToggleAlgorithm.IsEnabled = false;
             ButtonSelectImage.IsEnabled = false;
             LabelLoading.Visibility = Visibility.Visible;
-            ImageSpinLoading.Visibility = Visibility.Visible;
-            isWindowDraggable = false;
+            EllipseLoadingIndicator.Visibility = Visibility.Visible;
             if (currentBitmapFile != null)
             {
                 int similarityRes = 0;
@@ -975,14 +945,13 @@ namespace FrankuGUI
 
                 if(biggestStatic < MINIMUM_FOUND_PERCENTAGE){
                     LabelLoading.Visibility = Visibility.Hidden;
-                    ImageSpinLoading.Visibility = Visibility.Hidden;
+                    EllipseLoadingIndicator.Visibility = Visibility.Hidden;
                     RetrieveData("");
                     RetrieveImage("");
                     TextBoxSimilarityResult.Text = $"Similarity : -1%";
                     ButtonSearch.IsEnabled = true;
                     ToggleAlgorithm.IsEnabled = true;
                     ButtonSelectImage.IsEnabled = true;
-                    isWindowDraggable = true;
                     return;
                 }
 
@@ -1008,8 +977,7 @@ namespace FrankuGUI
             ToggleAlgorithm.IsEnabled = true;
             ButtonSelectImage.IsEnabled = true;
             LabelLoading.Visibility = Visibility.Hidden;
-            ImageSpinLoading.Visibility = Visibility.Hidden;
-            isWindowDraggable = true;
+            EllipseLoadingIndicator.Visibility = Visibility.Hidden;
         }
 
         private void FindNameAndRetrieveData(){

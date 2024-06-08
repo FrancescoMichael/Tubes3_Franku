@@ -96,7 +96,7 @@
             </Label>
         </Grid>
         <Label Content="Result" Margin="764,44,100,0" VerticalAlignment="Top" FontSize="20" FontFamily="Cascadia Mono SemiBold" Foreground="White"/>
-        <Image x:Name="ImageSpinLoading" gif:AnimationBehavior.SourceUri="/Resources/Rolling@1x-1.0s-200px-200px(1).gif" HorizontalAlignment="Left" Margin="14,462,0,0" Width="25" Source="/Resources/Rolling@1x-1.0s-200px-200px(1).gif" Height="26" VerticalAlignment="Top" Visibility="Hidden"/>
-        <Label x:Name="LabelLoading" Content="Loading" HorizontalAlignment="Left" Margin="40,464,0,0" VerticalAlignment="Top" FontFamily="Cascadia Mono" Height="23" Width="54" Foreground="White" FontSize="10" Visibility="Hidden"/>
+        <Label x:Name="LabelLoading" Content="Loading" HorizontalAlignment="Left" Margin="40,0,0,13" FontFamily="Cascadia Mono" Width="54" Foreground="White" FontSize="10" Visibility="Visible" Height="23" VerticalAlignment="Bottom"/>
+        <Ellipse x:Name="EllipseLoadingIndicator" Stroke="Red" Margin="20,0,0,17" Width="15" Height="15" Fill="Red" Visibility="Visible" VerticalAlignment="Bottom" HorizontalAlignment="Left"/>
     </Grid>
 </Window>
