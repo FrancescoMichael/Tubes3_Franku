@@ -582,6 +582,9 @@ namespace FrankuGUI
 
                 });
 
+                string executionTime = executionTimeMs.ToString();
+                TextBoxRuntime.Text = $"Runtime : {executionTime}ms";
+
                 if(biggestStatic < MINIMUM_FOUND_PERCENTAGE){
                     LabelLoading.Visibility = Visibility.Hidden;
                     EllipseLoadingIndicator.Visibility = Visibility.Hidden;
@@ -606,9 +609,6 @@ namespace FrankuGUI
                     RetrieveImage("");
                     return;
                 }
-
-                string executionTime = executionTimeMs.ToString();
-                TextBoxRuntime.Text = $"Runtime : {executionTime}ms";
 
                 // count percentage
                 TextBoxSimilarityResult.Text = $"Similarity : {biggestStatic}%";
