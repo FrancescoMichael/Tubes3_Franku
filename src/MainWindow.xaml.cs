@@ -1144,13 +1144,25 @@ namespace FrankuGUI
                 if(biggestStatic < MINIMUM_FOUND_PERCENTAGE){
                     LabelLoading.Visibility = Visibility.Hidden;
                     EllipseLoadingIndicator.Visibility = Visibility.Hidden;
-                    RetrieveData("");
-                    RetrieveImage("");
                     TextBoxSimilarityResult.Text = $"Similarity : -1%";
                     ButtonSearch.IsEnabled = true;
                     ToggleAlgorithm.IsEnabled = true;
                     ButtonSelectImage.IsEnabled = true;
                     // MessageBox.Show(biggestStatic.ToString());
+                    LabelNama.Content = $"Nama : ";
+                    LabelNIK.Content = $"NIK : ";
+                    LabelTmpLahir.Content = $"Tempat Lahir : ";
+                    LabelTglLahir.Content = $"Tanggal Lahir : ";
+                    LabelJenisKelamin.Content = $"Jenis Kelamin : ";
+                    LabelGoldar.Content = $"Golongan Darah : ";
+                    LabelAlamatContent.Content = $"";
+                    LabelAgama.Content = $"Agama : ";
+                    LabelStatusPerkawinan.Content = $"Status Perkawinan : ";
+                    LabelPekerjaan.Content = $"Pekerjaan : ";
+                    LabelKewarganegaraan.Content = $"Kewarganegaraan : ";
+                    ImageContainerMatched.Source = null;
+                    RetrieveData("");
+                    RetrieveImage("");
                     return;
                 }
 
