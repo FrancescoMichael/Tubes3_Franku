@@ -96,7 +96,7 @@
             </Label>
         </Grid>
         <Label Content="Result" Margin="764,44,100,0" VerticalAlignment="Top" FontSize="20" FontFamily="Cascadia Mono SemiBold" Foreground="White"/>
-        <Label x:Name="LabelLoading" Content="Loading" HorizontalAlignment="Left" Margin="40,0,0,13" FontFamily="Cascadia Mono" Width="54" Foreground="White" FontSize="10" Visibility="Visible" Height="23" VerticalAlignment="Bottom"/>
-        <Ellipse x:Name="EllipseLoadingIndicator" Stroke="Red" Margin="20,0,0,17" Width="15" Height="15" Fill="Red" Visibility="Visible" VerticalAlignment="Bottom" HorizontalAlignment="Left"/>
+        <Label x:Name="LabelLoading" Content="Loading" HorizontalAlignment="Left" Margin="40,0,0,13" FontFamily="Cascadia Mono" Width="54" Foreground="White" FontSize="10" Visibility="Hidden" Height="23" VerticalAlignment="Bottom"/>
+        <Ellipse x:Name="EllipseLoadingIndicator" Stroke="Red" Margin="20,0,0,17" Width="15" Height="15" Fill="Red" Visibility="Hidden" VerticalAlignment="Bottom" HorizontalAlignment="Left"/>
     </Grid>
 </Window>
