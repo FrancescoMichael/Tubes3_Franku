@@ -43,8 +43,8 @@ namespace FrankuGUI
 
         private static readonly int MINIMUM_FOUND_PERCENTAGE = 51;
 
-        private static string EncryptionKey = "1234567890abcdef";
-
+        private static string EncryptionKey = "2j34jid08e9ejfdd";
+        
         private readonly string connectionString = "Data Source=biodata.db;Version=3;";
 
         public MainWindow()
