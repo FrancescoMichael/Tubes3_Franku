@@ -17,6 +17,7 @@ using System.Data.SQLite;
 using System.Reflection.Emit;
 using System.Windows.Controls.Primitives;
 using System.Text.RegularExpressions;
+using System.Windows.Interop;
 
 
 namespace FrankuGUI
@@ -1083,6 +1084,8 @@ namespace FrankuGUI
             ButtonSearch.IsEnabled = false;
             ToggleAlgorithm.IsEnabled = false;
             ButtonSelectImage.IsEnabled = false;
+            LabelLoading.Visibility = Visibility.Visible;
+            EllipseLoadingIndicator.Visibility = Visibility.Visible;
             if (currentBitmapFile != null)
             {
                 int similarityRes = 0;
@@ -1139,6 +1142,8 @@ namespace FrankuGUI
                 });
 
                 if(biggestStatic < MINIMUM_FOUND_PERCENTAGE){
+                    LabelLoading.Visibility = Visibility.Hidden;
+                    EllipseLoadingIndicator.Visibility = Visibility.Hidden;
                     RetrieveData("");
                     RetrieveImage("");
                     TextBoxSimilarityResult.Text = $"Similarity : -1%";
@@ -1170,6 +1175,8 @@ namespace FrankuGUI
             ButtonSearch.IsEnabled = true;
             ToggleAlgorithm.IsEnabled = true;
             ButtonSelectImage.IsEnabled = true;
+            LabelLoading.Visibility = Visibility.Hidden;
+            EllipseLoadingIndicator.Visibility = Visibility.Hidden;
         }
 
         private void FindNameAndRetrieveData(){
