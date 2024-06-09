@@ -16,7 +16,7 @@ using System.Diagnostics;
 using System.Data.SQLite;
 using System.Reflection.Emit;
 using System.Windows.Controls.Primitives;
-using System.Text.RegularExpressions;
+
 using System.Windows.Interop;
 
 
@@ -25,500 +25,6 @@ namespace FrankuGUI
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-
-    class Point {
-        public int X;
-        public int Y;
-        public Point(int X, int Y)
-        {
-            this.X = X;
-            this.Y = Y;
-        }
-    }
-
-    class ConvexHull
-    {
-    public static double cross(Point O, Point A, Point B)
-    {
-        return (A.X - O.X) * (B.Y - O.Y) - (A.Y - O.Y) * (B.X - O.X);
-    }
-
-    public static List<Point> GetConvexHull(List<Point> points)
-    {
-        if (points == null)
-            return new List<Point>();
-
-        if (points.Count() <= 1)
-            return points;
-
-        int n = points.Count(), k = 0;
-        List<Point> H = new List<Point>(new Point[2 * n]);
-
-        points.Sort((a, b) =>
-             a.X == b.X ? a.Y.CompareTo(b.Y) : a.X.CompareTo(b.X));
-
-        // Build lower hull
-        for (int i = 0; i < n; ++i)
-        {
-            while (k >= 2 && cross(H[k - 2], H[k - 1], points[i]) <= 0)
-                k--;
-            H[k++] = points[i];
-        }
-
-        // Build upper hull
-        for (int i = n - 2, t = k + 1; i >= 0; i--)
-        {
-            while (k >= t && cross(H[k - 2], H[k - 1], points[i]) <= 0)
-                k--;
-            H[k++] = points[i];
-        }
-
-        return H.Take(k - 1).ToList();
-    }
-
-    public static double GetArea(List<Point> points){
-        int i,j;
-        double area = 0; 
-
-        for (i=0; i < points.Count; i++) {
-            j = (i + 1) % points.Count;
-
-            area += points[i].X * points[j].Y;
-            area -= points[i].Y * points[j].X;
-        }
-
-        area /= 2;
-        return (area < 0 ? -area : area);
-    }
-
-    }
-
-    class DBSCAN
-    {
-    public int eps;
-    public int minPts;
-    public List<Point> data;  // supplied in cluster()
-    public List<int> labels;  // supplied in cluster()
-    public List<string> baseList;
-    public List<string> queryList;
-    public List<List<int>> indexList;
-    public int M;
-    public int N;
-
-    public DBSCAN(int eps, int minPts)
-    {
-      this.eps = eps;
-      this.minPts = minPts;
-      this.labels = new List<int>();
-      this.M = 0;
-      this.N = 0;
-      this.baseList = new List<string>();
-      this.queryList = new List<string>();
-      this.indexList = new List<List<int>>();
-      this.data = new List<Point>();
-      this.labels = new List<int>();
-    }  
-
-    public void changeProp(List<string> baseList, List<string> queryList, List<List<int>> indexList){
-        this.baseList = baseList;
-        this.queryList = queryList;
-        this.indexList = indexList;
-        this.N = baseList.Count;
-        this.M = baseList[0].Length;
-    }
-
-    public List<int> Cluster(List<Point> data)
-    {
-      this.data = data;  // by reference
-      
-      if(this.labels.Count != this.data.Count){
-        this.labels = new List<int>(this.data.Count);
-        for(int i = 0; i < this.data.Count; i++){
-            this.labels.Add(-2);
-        }
-      }else{
-        for(int i = 0; i < this.data.Count; i++){
-            this.labels[i] = -2;
-        }
-      }
-      //this.labels = new int[this.data.Length]; 
-      // unprocessed
-
-      int cid = -1;  // offset the start
-      for (int i = 0; i < this.data.Count; ++i)
-      {
-        if (this.labels[i] != -2)  // has been processed
-          continue;
-
-        List<int> neighbors = this.RegionQuery(i);
-        if (neighbors.Count < this.minPts)
-        {
-          this.labels[i] = -1;  // noise
-        }
-        else
-        {
-          ++cid;
-          this.Expand(i, neighbors, cid);
-        }
-      }
-
-      return this.labels;
-    }
-
-    private List<int> RegionQuery(int p)
-    {
-      List<int> result = new List<int>();
-      Point askedPoint = this.data[p];
-      int xPoint = askedPoint.X;
-      int yPoint = askedPoint.Y;
-      for(int i = Math.Max(0, xPoint - eps); i <= Math.Min(N - 1, xPoint + eps); i++){
-        for(int j = Math.Max(0, yPoint - eps); j <= Math.Min(M - 1, yPoint + eps); j++){
-            int uwu = (i - xPoint) * (i - xPoint) + (j - yPoint) * (j - yPoint);
-            if(uwu > eps * eps) continue;
-            if(baseList[i][j] != queryList[i][j]){
-                result.Add(this.indexList[i][j]);
-            }
-        }
-      }
-      return result;
-    }
-
-    private void Expand(int p, List<int> neighbors, int cid)
-    {
-      this.labels[p] = cid;
-      //int i = 0;
-      //while(i < neighbors.Count)
-      for (int i = 0; i < neighbors.Count; ++i)
-      {
-        int pn = neighbors[i];
-        if (this.labels[pn] == -1)  // noise
-          this.labels[pn] = cid;
-        else if (this.labels[pn] == -2)  // unprocessed
-        {
-          this.labels[pn] = cid;
-          List<int> newNeighbors = this.RegionQuery(pn);
-          if (newNeighbors.Count >= this.minPts)
-            neighbors.AddRange(newNeighbors); // modifies loop
-        }
-        //++i;
-      }
-    }
-
-    private static double EucDistance(double[] x1,
-      double[] x2)
-    {
-      int dim = x1.Length;
-      double sum = 0.0;
-      for (int i = 0; i < dim; ++i)
-        sum += (x1[i] - x2[i]) * (x1[i] - x2[i]);
-      return Math.Sqrt(sum);
-    }
-
-  } // class DBSCAN
-
-  class FFT{
-    private static int LOGN = 18;
-    private static List<long>[] iw = new List<long>[LOGN];
-    private static List<long>[] rv = new List<long>[LOGN];
-    private static List<long>[] w = new List<long>[LOGN];
-    private static long mod = 998244353;
-    private static long g = 3;
-    private static double LOWER_BOUND_TO_CONTINUE = 0.75;
-
-    public static long powMod(long x, long y, long p){
-        long res = 1;
-        x %= p;
-        if(x == 0){
-            return 0;
-        }
-        while(y > 0){
-            if((y & 1L) == 1){
-                res = ((res % p) * (x % p)) % p;
-            }
-            y >>= 1;
-            x = ((x % p) * (x % p)) % p;
-        }
-        return res;
-    }
-
-    public static long inverseMod(long x, long p){
-        return powMod(x, p - 2, p);
-    }
-
-    public static void initFFT(){
-        long wb = powMod(g, (mod - 1) / (1 << LOGN), mod);
-        //MessageBox.Show("DONE POWMOD");
-        for(int i = 0; i < LOGN; i++){
-            iw[i] = new List<long>();
-            rv[i] = new List<long>();
-            w[i] = new List<long>();
-        }
-        for(int st = 0; st < LOGN; st++){
-            for(int i = 0; i < (1 << st); i++){
-                w[st].Add(1);
-                iw[st].Add(1);
-                rv[st].Add(0);
-            }
-            long bw = powMod(wb, 1 << (LOGN - st - 1), mod);
-            long ibw = inverseMod(bw, mod);
-            long cw = 1;
-            long icw = 1;
-            for(int k = 0; k < (1 << st); k++){
-                w[st][k] = cw;
-                iw[st][k] = icw;
-                cw = (cw * bw) % mod;
-                icw = (icw * ibw) % mod;
-            }
-            if(st == 0){
-                rv[st][0] = 0;
-                continue;
-            }
-            int h = (1 << (st - 1));
-            for(int k = 0; k < (1 << st); k++){
-                long u = 1;
-                if(k < h) u = 0;
-                rv[st][k] = (rv[st - 1][k & (h - 1)] << 1) | u;
-            }
-            //string awa = st.ToString();
-            //MessageBox.Show(awa);
-        }
-    }
-
-    private static void fft(ref List<long> a, bool inverse){
-        long n = a.Count;
-        long ln = (long)Math.Log2(n * 1.0);
-        for(int i = 0; i < n; i++){
-            int ni = (int)rv[ln][i];
-            if(i < ni){
-                long temp = a[i];
-                a[i] = a[ni];
-                a[ni] = temp;
-            }
-        }
-        //MessageBox.Show("YEEZY TAUGHT U WELL");
-        for(int st = 0; (1 << st) < n; st++){
-            int len = (1 << st);
-            for(int k = 0; k < n; k += (len << 1)){
-                for(int pos = k; pos < k + len; pos++){
-                    long l = a[pos];
-                    long r = (a[pos + len] * (inverse ? iw[st][pos - k] : w[st][pos - k])) % mod;
-                    a[pos] = ((l + r < mod) ? l + r : l + r - mod);
-                    a[pos + len] = ((l - r >= 0) ? l - r : mod + l - r);
-                }
-            }
-        }
-        if(inverse){
-            long inValue = inverseMod(n, mod);
-            for(int i = 0; i < n; i++){
-                a[i] = (a[i] * inValue) % mod;
-            }
-        }
-    }
-
-    public static List<long> mul(ref List<long> a, ref List<long> b){
-        List<long> fa = new List<long>(a);
-        List<long> fb = new List<long>(b);
-        int n = 1;
-        while(n < a.Count + b.Count){
-            n <<= 1;
-        }
-        fa.AddRange(Enumerable.Repeat(0L, n - fa.Count));
-        fb.AddRange(Enumerable.Repeat(0L, n - fb.Count));
-        //MessageBox.Show("REIMPULSTED");
-        fft(ref fa, false);
-        //MessageBox.Show("DOWNLOAD");
-        fft(ref fb, false);
-        //MessageBox.Show("H@");
-        for(int i = 0; i < n; i++){
-            fa[i] = fa[i] * fb[i] % mod;
-        }
-        fft(ref fa, true);
-        //MessageBox.Show("BOOTLEGGER");
-        return fa;
-    }
-
-    public static (int, int) FindStart(List<string> queryString, List<string> baseString){
-        int N1 = queryString.Count;
-        int M1 = queryString[0].Length;
-        int N2 = baseString.Count;
-        int M2 = baseString[0].Length;
-        if(N1 > N2 || M1 > M2){
-            return (-1, -1);
-        }
-        if(N1 == N2 && M1 == M2){
-            return (0, 0);
-        }
-        List<long> realBase = new List<long>();
-        List<long> invertedBase = new List<long>();
-        List<long> realQuery = new List<long>();
-        List<long> invertedQuery = new List<long>();
-        for(int i = 0; i < N2; i++){
-            for(int j = 0; j < M2; j++){
-                long val = baseString[i][j] - '0';
-                realBase.Add(val);
-                invertedBase.Add(val ^ 1L);
-            }
-        }
-        int maxim = N1 * M2 - 1;
-        for(int i = 0; i < N1; i++){
-            for(int j = 0; j < M1; j++){
-                long val = queryString[i][j] - '0';
-                realQuery.Add(val);
-                invertedQuery.Add(val ^ 1L);
-            }
-            realQuery.AddRange(Enumerable.Repeat(0L, M2 - M1));
-            invertedQuery.AddRange(Enumerable.Repeat(0L, M2 - M1));
-        }
-        realQuery.Reverse();
-        invertedQuery.Reverse();
-        if(realQuery.Count != maxim + 1 || invertedQuery.Count != maxim + 1){
-            //MessageBox.Show("?????W");
-        }
-        List<long> res1 = mul(ref realBase, ref realQuery);
-        List<long> res2 = mul(ref invertedBase, ref invertedQuery);
-        //MessageBox.Show("SOMEONE DONE!!");
-        int r1c = res1.Count;
-        int r2c = res2.Count;
-        int curMaxi = -1, ansI = -1, ansJ = -1;
-        for(int i = 0; i <= N2 - N1; i++){
-            for(int j = 0; j <= M2 - M1; j++){
-                int diff = i * M2 + j;
-                diff += maxim;
-                int take = 0;
-                if(diff < r1c){
-                    take += (int)res1[diff];
-                }
-                if(diff < r2c){
-                    take += (int)res2[diff];
-                }
-                if(take > curMaxi){
-                    curMaxi = take;
-                    ansI = i;
-                    ansJ = j;
-                }
-            }
-        }
-        double percentage = 0;
-        if(curMaxi != -1){
-            percentage = (curMaxi * 1.0) / (N1 * M1 * 1.0);
-        }
-        if(percentage > 1){
-            MessageBox.Show("???PER");
-        }
-        if(percentage < LOWER_BOUND_TO_CONTINUE){
-            return (-1, -1);
-        }
-        return (ansI, ansJ);
-    }
-
-  } // class FFT
-
-    class EncryptionTEA
-    {
-        private static readonly uint Delta = 0x9e3779b9;
-        private static readonly int Rounds = 32;
-
-        public static byte[] Encrypt(byte[] data, byte[] key)
-        { 
-            uint v0 = BitConverter.ToUInt32(data, 0);
-            uint v1 = BitConverter.ToUInt32(data, 4);
-            uint k0 = BitConverter.ToUInt32(key, 0);
-            uint k1 = BitConverter.ToUInt32(key, 4);
-            uint k2 = BitConverter.ToUInt32(key, 8);
-            uint k3 = BitConverter.ToUInt32(key, 12);
-
-            uint sum = 0;
-            for (int i = 0; i < Rounds; i++)
-            {
-                sum += Delta;
-                v0 += ((v1 << 4) + k0) ^ (v1 + sum) ^ ((v1 >> 5) + k1);
-                v1 += ((v0 << 4) + k2) ^ (v0 + sum) ^ ((v0 >> 5) + k3);
-            }
-
-            byte[] encrypted = new byte[8];
-            Array.Copy(BitConverter.GetBytes(v0), 0, encrypted, 0, 4);
-            Array.Copy(BitConverter.GetBytes(v1), 0, encrypted, 4, 4);
-            return encrypted;
-        }
-
-        public static byte[] Decrypt(byte[] data, byte[] key)
-        {
-            uint v0 = BitConverter.ToUInt32(data, 0);
-            uint v1 = BitConverter.ToUInt32(data, 4);
-            uint k0 = BitConverter.ToUInt32(key, 0);
-            uint k1 = BitConverter.ToUInt32(key, 4);
-            uint k2 = BitConverter.ToUInt32(key, 8);
-            uint k3 = BitConverter.ToUInt32(key, 12);
-
-            uint sum = Delta * (uint)Rounds;
-            for (int i = 0; i < Rounds; i++)
-            {
-                v1 -= ((v0 << 4) + k2) ^ (v0 + sum) ^ ((v0 >> 5) + k3);
-                v0 -= ((v1 << 4) + k0) ^ (v1 + sum) ^ ((v1 >> 5) + k1);
-                sum -= Delta;
-            }
-
-            byte[] decrypted = new byte[8];
-            Array.Copy(BitConverter.GetBytes(v0), 0, decrypted, 0, 4);
-            Array.Copy(BitConverter.GetBytes(v1), 0, decrypted, 4, 4);
-            return decrypted;
-        }
-
-        public static string EncryptString(string plainText, string key)
-        {
-            byte[] data = Encoding.UTF8.GetBytes(plainText);
-            byte[] paddedData = Pad(data);
-            byte[] keyBytes = Encoding.UTF8.GetBytes(key);
-
-            byte[] encryptedData = new byte[paddedData.Length];
-            for (int i = 0; i < paddedData.Length; i += 8)
-            {
-                byte[] block = new byte[8];
-                Array.Copy(paddedData, i, block, 0, 8);
-                byte[] encryptedBlock = Encrypt(block, keyBytes);
-                Array.Copy(encryptedBlock, 0, encryptedData, i, 8);
-            }
-
-            return Convert.ToBase64String(encryptedData);
-        }
-
-        public static string DecryptString(string encryptedText, string key)
-        {
-            byte[] data = Convert.FromBase64String(encryptedText);
-            byte[] keyBytes = Encoding.UTF8.GetBytes(key);
-
-            byte[] decryptedData = new byte[data.Length];
-            for (int i = 0; i < data.Length; i += 8)
-            {
-                byte[] block = new byte[8];
-                Array.Copy(data, i, block, 0, 8);
-                byte[] decryptedBlock = Decrypt(block, keyBytes);
-                Array.Copy(decryptedBlock, 0, decryptedData, i, 8);
-            }
-
-            return Encoding.UTF8.GetString(Unpad(decryptedData));
-        }
-
-        private static byte[] Pad(byte[] data)
-        {
-            int paddingLength = 8 - (data.Length % 8);
-            byte[] paddedData = new byte[data.Length + paddingLength];
-            Array.Copy(data, 0, paddedData, 0, data.Length);
-            for (int i = data.Length; i < paddedData.Length; i++)
-            {
-                paddedData[i] = (byte)paddingLength;
-            }
-            return paddedData;
-        }
-
-        private static byte[] Unpad(byte[] data)
-        {
-            int paddingLength = data[data.Length - 1];
-            byte[] unpaddedData = new byte[data.Length - paddingLength];
-            Array.Copy(data, 0, unpaddedData, 0, unpaddedData.Length);
-            return unpaddedData;
-        }
-    }
 
     public partial class MainWindow : Window
     {
@@ -530,8 +36,6 @@ namespace FrankuGUI
         private static string ansStatic = "";
         private static bool segitunya = false;
         private static int MAX_THREAD = 18;
-        private static int ALPHABET_SIZE = 2;
-        private static char FIRST_CHARACTER = '0';
         private static int numArea = -1;
         private static List<List<Point>>? resConvexHulls;
 
@@ -692,7 +196,7 @@ namespace FrankuGUI
             if (openFileDialog.ShowDialog() == true)
             {
                 BitmapImage bit = new BitmapImage(new Uri(openFileDialog.FileName));
-                currentBitmapFile = BitmapImage2Bitmap(bit);
+                currentBitmapFile = Converter.BitmapImage2Bitmap(bit);
                 ImageContainerInput.Source = bit;
                 TextBoxSelectedFile.Text = System.IO.Path.GetFileName(openFileDialog.FileName);
             }
@@ -782,7 +286,7 @@ namespace FrankuGUI
         public void processThread(int i, int j, List<string> pathList, List<string> nameList, List<string> purePath, List<string> queryString) {
             for(; i < j; i++){
                 Bitmap baseBitmap = new Bitmap(pathList[i]);
-                List<string> baseList = BmpToBinaryString(baseBitmap);
+                List<string> baseList = Converter.BmpToBinaryString(baseBitmap);
                 //if(baseList.Count != queryString.Count || baseList[0].Length != queryString[0].Length){
                   //  continue;
                 //}
@@ -804,14 +308,14 @@ namespace FrankuGUI
         public void processKMP(int i, int j, List<string> pathList, List<string> nameList, List<string> purePath, string pattern) {
             for(; i < j && !segitunya; i++){
                 Bitmap baseBitmap = new Bitmap(pathList[i]);
-                List<string> baseList = BmpToBinaryString(baseBitmap);
+                List<string> baseList = Converter.BmpToBinaryString(baseBitmap);
                 int firstQuarter = baseList.Count / 4;
                 int lastQuarter = baseList.Count - firstQuarter;
                 string text = "";
                 for(; firstQuarter < lastQuarter; firstQuarter++){
                     text += baseList[firstQuarter];
                 }
-                bool take = KMPSearch(pattern, text);
+                bool take = KMP.KMPSearch(pattern, text);
                 lock(_lock){
                     if(take){
                         segitunya = true;
@@ -827,7 +331,7 @@ namespace FrankuGUI
         public void processBM(int i, int j, List<string> pathList, List<string> nameList, List<string> purePath, string pattern) {
             for(; i < j && !segitunya; i++){
                 Bitmap baseBitmap = new Bitmap(pathList[i]);
-                List<string> baseList = BmpToBinaryString(baseBitmap);
+                List<string> baseList = Converter.BmpToBinaryString(baseBitmap);
                 int threeEights = baseList.Count / 20;
                 threeEights *= 9;
                 int lastThreeEights = baseList.Count - threeEights;
@@ -835,7 +339,7 @@ namespace FrankuGUI
                 for(; threeEights < lastThreeEights; threeEights++){
                     text += baseList[threeEights];
                 }
-                bool take = BMSearch(pattern, text);
+                bool take = BM.BMSearch(pattern, text);
                 lock(_lock){
                     if(take){
                         segitunya = true;
@@ -898,69 +402,6 @@ namespace FrankuGUI
             }
             //MessageBox.Show("UYK");
             return (ans, biggest);
-        }
-
-        private List<int> computeLPSArray(string pat, int M) {
-            int len = 0;
-            int i = 1;
-            List<int> lps = new List<int>(M);
-            for(int j = 0; j < M; j++){
-                lps.Add(0);
-            }
-            while(i < M) {
-                if(pat[i] == pat[len]) {
-                    len++;
-                    lps[i] = len;
-                    i++;
-                } else {
-                    if(len != 0){
-                        len = lps[len - 1];
-                    }else{
-                        lps[i] = len;
-                        i++;
-                    }
-                }
-            }
-            return lps;
-        }
-
-        private bool KMPSearch(string pat, string txt) {
-            int M = pat.Length;
-            int N = txt.Length;
-            List<int> lps = computeLPSArray(pat, M);
-            int i = 0, j = 0;
-            while(i < N) {
-                if(pat[j] == txt[i]) {
-                    j++;
-                    i++;
-                }
-                if(j == M){
-                    return true;
-                } else if (i < N && pat[j] != txt[i]) {
-                    if(j != 0) j = lps[j - 1];
-                    else i++;
-                }
-            } 
-            return false;
-        }
-
-        private bool BMSearch(string pat, string txt) {
-            int M = pat.Length;
-            int N = txt.Length;
-            List<int> badChar = new List<int>();
-            for(int u = 0; u < ALPHABET_SIZE; u++) badChar.Add(-1);
-            int i = 0;
-            while(i <= N - M) {
-                int j = M - 1;
-                while(j >= 0 && pat[j] == txt[i + j]){
-                    j--;
-                }
-                if(j < 0){
-                    return true;
-                }
-                i += Math.Max(1, j - badChar[txt[i + j] - FIRST_CHARACTER]);
-            } 
-            return false;
         }
 
         private Thread StartKMPThread(int i, int j, List<string> pathList, List<string> nameList, List<string> purePath, string pattern){
@@ -1104,7 +545,7 @@ namespace FrankuGUI
                 // start time
                 
                 // convert to binary
-                List<string> binaryString = BmpToBinaryString(bitmap);
+                List<string> binaryString = Converter.BmpToBinaryString(bitmap);
                 // convert to ascii
                 //string asciiString = BinaryToAscii(binaryString);
                 //Console.WriteLine(asciiString);
@@ -1204,7 +645,7 @@ namespace FrankuGUI
                         names.Add(EncryptionTEA.DecryptString(reader["nama"].ToString()!, EncryptionKey));
                     }
                     for(int i = 0; i < names.Count && !fd; i++){
-                        if(regexMatch(nameString, names[i])){
+                        if(RegexSpec.regexMatch(nameString, names[i])){
                             RetrieveData(names[i]);
                             fd = true;
                         }
@@ -1268,65 +709,6 @@ namespace FrankuGUI
             }
         }
 
-        private bool regexMatch(string plainText, string comparedText){
-            string regexText = "";
-
-            for (int i = 0; i < plainText.Length; i++)
-            {
-                char c = plainText[i];
-
-                if (c == 'a' || c == 'A')
-                {
-                    regexText += "(?:[Aa]|4)?";
-                }
-                else if (c == 'i' || c == 'I')
-                {
-                    regexText += "(?:[Ii]|1)?";
-                }
-                else if (c == 'u' || c == 'U')
-                {
-                    regexText += "(?:[Uu])?";
-                }
-                else if (c == 'e' || c == 'E')
-                {
-                    regexText += "(?:[Ee]|3)?";
-                }
-                else if (c == 'o' || c == 'O')
-                {
-                    regexText += "(?:[Oo]|0)?";
-                }
-                else if (c == 'g' || c == 'G')
-                {
-                    regexText += "(?:[Gg]|6|9)";
-                }
-                else if (c == 's' || c == 'S')
-                {
-                    regexText += "(?:[Ss]|5)";
-                }
-                else if (c == 'r' || c == 'R')
-                {
-                    regexText += "(?:[Rr]|12)";
-                }
-                else if (c == 'b' || c == 'B')
-                {
-                    regexText += "(?:[Bb]|13|8)";
-                }
-                else if (c == 't' || c == 'T')
-                {
-                    regexText += "(?:[Tt]|7)";
-                }
-                else if (c == 'l' || c == 'L')
-                {
-                    regexText += "(?:[Ll]|1)";
-                }
-                else
-                {
-                    regexText += "(?:[" + char.ToLower(c) + char.ToUpper(c) + "])";
-                }
-            }
-            bool isMatch = Regex.IsMatch(comparedText, regexText);
-            return isMatch;
-        }
 
         private void RetrieveImage(string name)
         {
@@ -1343,7 +725,7 @@ namespace FrankuGUI
                 bit.CacheOption = BitmapCacheOption.OnLoad;
                 bit.StreamSource = stream;
                 bit.EndInit();
-                using(Bitmap baseBitmap = BitmapImage2Bitmap(bit))
+                using(Bitmap baseBitmap = Converter.BitmapImage2Bitmap(bit))
                 using(Bitmap changedBitmap = new Bitmap(baseBitmap.Width, baseBitmap.Height))
                 using(Bitmap finalBitmap = new Bitmap(changedBitmap.Width, changedBitmap.Height)){
                 //pictureBox2.Image = new Bitmap(resultImagePath);
@@ -1442,7 +824,7 @@ namespace FrankuGUI
                 bit.Freeze();
                 stream.Close();
                 stream.Dispose();
-                BitmapImage changedImage = Bitmap2BitmapImage(finalBitmap);
+                BitmapImage changedImage = Converter.Bitmap2BitmapImage(finalBitmap);
                 ImageContainerMatched.Source = changedImage;
                 }
             }
@@ -1454,122 +836,5 @@ namespace FrankuGUI
                 MessageBox.Show("Result image file not found.");
             }
         }
-
-        private BitmapImage Bitmap2BitmapImage(Bitmap bitmap)
-        {
-            using (var memory = new MemoryStream())
-            {
-                bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Png);
-                memory.Position = 0;
-
-                var bitmapImage = new BitmapImage();
-                bitmapImage.BeginInit();
-                bitmapImage.StreamSource = memory;
-                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                bitmapImage.EndInit();
-                bitmapImage.Freeze();
-
-                return bitmapImage;
-            }
-        }
-        private List<string> BmpToBinaryString(Bitmap bmp)
-        {
-            /*
-            int threshold = 128;
-            List<string> result = new List<string>();
-            for (int y = 0; y < bmp.Height; y++)
-            {
-                StringBuilder asciiString = new StringBuilder();
-                for (int x = 0; x < bmp.Width; x += 8)
-                {
-                    int res = 0;
-                    int u = 0;
-                    for(; u < 8 && x + u < bmp.Width; u++){
-                        res <<= 1;
-                        System.Drawing.Color pixelColor = bmp.GetPixel(x + u, y);
-                        int grayValue = (int)(pixelColor.R * 0.299 + pixelColor.G * 0.587 + pixelColor.B * 0.114);
-                        res |= (grayValue < threshold ? 1 : 0);                        
-                    }
-                    for(; u < 8; u++){
-                        res <<= 1;
-                    }
-                    asciiString.Append((char)res);
-                }
-                result.Add(asciiString.ToString());
-            }*/
-            int threshold = 128;
-            List<string> result = new List<string>();
-            for (int y = 0; y < bmp.Height; y++)
-            {
-                StringBuilder asciiString = new StringBuilder();
-                for (int x = 0; x < bmp.Width; x++)
-                {
-                    System.Drawing.Color pixelColor = bmp.GetPixel(x, y);
-                    int grayValue = (int)(pixelColor.R * 0.299 + pixelColor.G * 0.587 + pixelColor.B * 0.114);
-                    asciiString.Append((grayValue < threshold ? '1' : '0'));
-                }
-                result.Add(asciiString.ToString());
-            }
-            return result;
-        }
-
-        private Bitmap BitmapImage2Bitmap(BitmapImage bitmapImage)
-        {
-            using (MemoryStream outStream = new MemoryStream())
-            {
-                BitmapEncoder enc = new BmpBitmapEncoder();
-                enc.Frames.Add(BitmapFrame.Create(bitmapImage));
-                enc.Save(outStream);
-                System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(outStream);
-                return new Bitmap(bitmap);
-            }
-        }
-
-        private string BinaryToAscii(string binaryString)
-        {
-            StringBuilder asciiString = new StringBuilder();
-            StringBuilder currentByte = new StringBuilder();
-
-            foreach (char c in binaryString)
-            {
-                if (c == '\n')
-                {
-                    if (currentByte.Length > 0)
-                    {
-                        while (currentByte.Length < 8)
-                        {
-                            currentByte.Append('0');
-                        }
-                        int decimalValue = Convert.ToInt32(currentByte.ToString(), 2);
-                        asciiString.Append((char)decimalValue);
-                        currentByte.Clear();
-                    }
-                    asciiString.Append('\n');
-                }
-                else
-                {
-                    currentByte.Append(c);
-                    if (currentByte.Length == 8)
-                    {
-                        int decimalValue = Convert.ToInt32(currentByte.ToString(), 2);
-                        asciiString.Append((char)decimalValue);
-                        currentByte.Clear();
-                    }
-                }
-            }
-
-            if (currentByte.Length > 0)
-            {
-                while (currentByte.Length < 8)
-                {
-                    currentByte.Append('0');
-                }
-                int decimalValue = Convert.ToInt32(currentByte.ToString(), 2);
-                asciiString.Append((char)decimalValue);
-            }
-
-            return asciiString.ToString();
-        }
-
     }
 }
