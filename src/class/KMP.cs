@@ -24,7 +24,7 @@ namespace FrankuGUI{
             return lps;
         }
 
-        public static bool KMPSearch(string pat, string txt) {
+        public static (bool, int) KMPSearch(string pat, string txt) {
             int M = pat.Length;
             int N = txt.Length;
             List<int> lps = computeLPSArray(pat, M);
@@ -35,13 +35,13 @@ namespace FrankuGUI{
                     i++;
                 }
                 if(j == M){
-                    return true;
+                    return (true, i - M);
                 } else if (i < N && pat[j] != txt[i]) {
                     if(j != 0) j = lps[j - 1];
                     else i++;
                 }
             } 
-            return false;
+            return (false, -1);
         }
         
     }

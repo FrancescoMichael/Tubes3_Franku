@@ -305,48 +305,80 @@ namespace FrankuGUI
             }
         }
 
-        public void processKMP(int i, int j, List<string> pathList, List<string> nameList, List<string> purePath, string pattern) {
+        public bool bruteForceMatching(int localRow, int localCol, List<string> baseList, List<string> queryList){
+            bool same = true;
+            for(int i = 0; i < queryList.Count && same; i++){
+                for(int j = 0; j < queryList[0].Length && same; j++){
+                    if(baseList[localRow + i][localCol + j] != queryList[i][j]){
+                        same = false;
+                    }
+                }
+            }
+            return same;
+        }
+
+        public void processKMP(int i, int j, List<string> pathList, List<string> nameList, List<string> purePath, string pattern, int patternStart, List<string> queryList) {
             for(; i < j && !segitunya; i++){
                 Bitmap baseBitmap = new Bitmap(pathList[i]);
                 List<string> baseList = Converter.BmpToBinaryString(baseBitmap);
                 int firstQuarter = baseList.Count / 4;
                 int lastQuarter = baseList.Count - firstQuarter;
                 string text = "";
+                int startingRow = firstQuarter;
                 for(; firstQuarter < lastQuarter; firstQuarter++){
                     text += baseList[firstQuarter];
                 }
-                bool take = KMP.KMPSearch(pattern, text);
+                var resKMP = KMP.KMPSearch(pattern, text);
+                bool take = resKMP.Item1;
                 lock(_lock){
                     if(take){
-                        segitunya = true;
-                        biggestStatic = 100;
-                        ansStatic = purePath[i];
-                        nameString = nameList[i];
-                        break;
+                        int localRow = resKMP.Item2 / baseList[0].Length;
+                        int localCol = resKMP.Item2 % baseList[0].Length;
+                        localRow += startingRow - patternStart;
+                        if(bruteForceMatching(localRow, localCol, baseList, queryList)){
+                            segitunya = true;
+                            biggestStatic = 100;
+                            ansStatic = purePath[i];
+                            nameString = nameList[i];
+                            break;
+                        }
                     }
                 }
             }
         }
 
-        public void processBM(int i, int j, List<string> pathList, List<string> nameList, List<string> purePath, string pattern) {
+        public void processBM(int i, int j, List<string> pathList, List<string> nameList, List<string> purePath, string pattern, int patternStart, List<string> queryList) {
             for(; i < j && !segitunya; i++){
                 Bitmap baseBitmap = new Bitmap(pathList[i]);
                 List<string> baseList = Converter.BmpToBinaryString(baseBitmap);
                 int threeEights = baseList.Count / 20;
                 threeEights *= 9;
+                int startingRow = threeEights;
                 int lastThreeEights = baseList.Count - threeEights;
+                //Console.WriteLine(startingRow);
+                //Console.WriteLine(lastThreeEights);
+                //Console.WriteLine(patternStart);
                 string text = "";
                 for(; threeEights < lastThreeEights; threeEights++){
                     text += baseList[threeEights];
                 }
-                bool take = BM.BMSearch(pattern, text);
+                var resBM = BM.BMSearch(pattern, text);
+                bool take = resBM.Item1;
                 lock(_lock){
                     if(take){
-                        segitunya = true;
-                        biggestStatic = 100;
-                        ansStatic = purePath[i];
-                        nameString = nameList[i];
-                        break;
+                        //Console.WriteLine("YOOO");
+                        //MessageBox.Show("TAKE");
+                        int localRow = resBM.Item2 / baseList[0].Length;
+                        int localCol = resBM.Item2 % baseList[0].Length;
+                        localRow += startingRow - patternStart;
+                        if(bruteForceMatching(localRow, localCol, baseList, queryList)){
+                            //MessageBox.Show("IT WORKS");
+                            segitunya = true;
+                            biggestStatic = 100;
+                            ansStatic = purePath[i];
+                            nameString = nameList[i];
+                            break;
+                        }
                     }
                 }
             }
@@ -404,8 +436,8 @@ namespace FrankuGUI
             return (ans, biggest);
         }
 
-        private Thread StartKMPThread(int i, int j, List<string> pathList, List<string> nameList, List<string> purePath, string pattern){
-            var t = new Thread(() => processKMP(i, j, pathList, nameList, purePath, pattern));
+        private Thread StartKMPThread(int i, int j, List<string> pathList, List<string> nameList, List<string> purePath, string pattern, int patternStart, List<string> queryList){
+            var t = new Thread(() => processKMP(i, j, pathList, nameList, purePath, pattern, patternStart, queryList));
             t.Start();
             return t;
         }
@@ -416,8 +448,9 @@ namespace FrankuGUI
             int biggest = -1;
             string ans = "";
             string pattern = "";
+            int middleRow = -1;
             try{
-                int middleRow = queryString.Count / 2;
+                middleRow = queryString.Count / 2;
                 pattern = queryString[middleRow];
             }catch(Exception ){
                 return ("", 0);
@@ -445,7 +478,7 @@ namespace FrankuGUI
                     for(int i = 0; i < MAX_THREAD; i++){
                         double takeLenDouble = len / UNPROCESS_THREADS;
                         int takeLen = (int)Math.Floor(takeLenDouble);
-                        Thread t = StartKMPThread(last_starting_pos, last_starting_pos + takeLen, pathList, nameList, purePath, pattern);
+                        Thread t = StartKMPThread(last_starting_pos, last_starting_pos + takeLen, pathList, nameList, purePath, pattern, middleRow, queryString);
                         active_threads.Add(t);
                         len -= takeLen;
                         last_starting_pos += takeLen;
@@ -462,8 +495,8 @@ namespace FrankuGUI
             return (ans, biggest);
         }
 
-        private Thread StartBMThread(int i, int j, List<string> pathList, List<string> nameList, List<string> purePath, string pattern){
-            var t = new Thread(() => processBM(i, j, pathList, nameList, purePath, pattern));
+        private Thread StartBMThread(int i, int j, List<string> pathList, List<string> nameList, List<string> purePath, string pattern, int patternStart, List<string> queryList){
+            var t = new Thread(() => processBM(i, j, pathList, nameList, purePath, pattern, patternStart, queryList));
             t.Start();
             return t;
         }
@@ -474,8 +507,9 @@ namespace FrankuGUI
             int biggest = -1;
             string ans = "";
             string pattern = "";
+            int middleRow = -1;
             try{
-                int middleRow = queryString.Count / 2;
+                middleRow = queryString.Count / 2;
                 pattern = queryString[middleRow];
             }catch(Exception ){
                 return ("", 0);
@@ -503,7 +537,7 @@ namespace FrankuGUI
                     for(int i = 0; i < MAX_THREAD; i++){
                         double takeLenDouble = len / UNPROCESS_THREADS;
                         int takeLen = (int)Math.Floor(takeLenDouble);
-                        Thread t = StartBMThread(last_starting_pos, last_starting_pos + takeLen, pathList, nameList, purePath, pattern);
+                        Thread t = StartBMThread(last_starting_pos, last_starting_pos + takeLen, pathList, nameList, purePath, pattern, middleRow, queryString);
                         active_threads.Add(t);
                         len -= takeLen;
                         last_starting_pos += takeLen;

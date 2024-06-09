@@ -3,11 +3,12 @@ namespace FrankuGUI{
     class BM{
     private static int ALPHABET_SIZE = 2;
     private static char FIRST_CHARACTER = '0';
-        public static bool BMSearch(string pat, string txt) {
+        public static (bool, int) BMSearch(string pat, string txt) {
             int M = pat.Length;
             int N = txt.Length;
             List<int> badChar = new List<int>();
             for(int u = 0; u < ALPHABET_SIZE; u++) badChar.Add(-1);
+            for(int u = 0; u < txt.Length; u++) badChar[txt[u] - FIRST_CHARACTER] = u;
             int i = 0;
             while(i <= N - M) {
                 int j = M - 1;
@@ -15,11 +16,11 @@ namespace FrankuGUI{
                     j--;
                 }
                 if(j < 0){
-                    return true;
+                    return (true, i);
                 }
                 i += Math.Max(1, j - badChar[txt[i + j] - FIRST_CHARACTER]);
             } 
-            return false;
+            return (false, -1);
         }
     }
 }
