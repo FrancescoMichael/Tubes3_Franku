@@ -1,6 +1,7 @@
 namespace FrankuGUI
 {        
-    class Point {
+    class Point 
+    {
         public int X;
         public int Y;
         public Point(int X, int Y)

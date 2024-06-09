@@ -3,7 +3,6 @@ using System.IO;
 using System.Drawing;
 using System.Text;
 
-
 namespace FrankuGUI
 {
     public class Converter{
@@ -27,29 +26,6 @@ namespace FrankuGUI
         }
         public static List<string> BmpToBinaryString(Bitmap bmp)
         {
-            /*
-            int threshold = 128;
-            List<string> result = new List<string>();
-            for (int y = 0; y < bmp.Height; y++)
-            {
-                StringBuilder asciiString = new StringBuilder();
-                for (int x = 0; x < bmp.Width; x += 8)
-                {
-                    int res = 0;
-                    int u = 0;
-                    for(; u < 8 && x + u < bmp.Width; u++){
-                        res <<= 1;
-                        System.Drawing.Color pixelColor = bmp.GetPixel(x + u, y);
-                        int grayValue = (int)(pixelColor.R * 0.299 + pixelColor.G * 0.587 + pixelColor.B * 0.114);
-                        res |= (grayValue < threshold ? 1 : 0);                        
-                    }
-                    for(; u < 8; u++){
-                        res <<= 1;
-                    }
-                    asciiString.Append((char)res);
-                }
-                result.Add(asciiString.ToString());
-            }*/
             int threshold = 128;
             List<string> result = new List<string>();
             for (int y = 0; y < bmp.Height; y++)

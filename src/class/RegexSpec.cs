@@ -1,8 +1,11 @@
 using System.Text.RegularExpressions;
 
-namespace FrankuGUI{
-    class RegexSpec{
-       public static bool regexMatch(string plainText, string comparedText){
+namespace FrankuGUI
+{
+    class RegexSpec
+    {
+       public static bool regexMatch(string plainText, string comparedText)
+       {
             string regexText = "";
 
             for (int i = 0; i < plainText.Length; i++)
@@ -58,7 +61,9 @@ namespace FrankuGUI{
                     regexText += "(?:[" + char.ToLower(c) + char.ToUpper(c) + "])";
                 }
             }
+
             bool isMatch = Regex.IsMatch(comparedText, regexText);
+            
             return isMatch;
         }
     }
