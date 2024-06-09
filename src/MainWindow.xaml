@@ -5,10 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FrankuGUI"
         mc:Ignorable="d"
+        Icon="blueicon.png"
         Title="Fingerprint Pattern Matcher - Franku" Height="534" Width="960"
-        xmlns:gif="https://github.com/XamlAnimatedGif/XamlAnimatedGif"
-        ResizeMode="NoResize"
-        >
+        ResizeMode="NoResize">
     <Grid x:Name="GridBG">
         <Grid.Background>
             <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
